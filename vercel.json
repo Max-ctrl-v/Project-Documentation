@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/api-client.js", "dest": "/api-client.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
