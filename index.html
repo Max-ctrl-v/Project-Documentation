@@ -1330,6 +1330,9 @@
           }
         }
 
+        // Pre-load seed data on first visit
+        await this._loadSeedIfEmpty();
+
         // Check session
         if (sessionStorage.getItem(this._sessionKey) === 'active') {
           this._showApp();
@@ -1379,16 +1382,17 @@
           return;
         }
 
-        // ── Try backend login first ──
+        let backendOk = false;
+
+        // ── Try backend login ──
         if (this._hasBackend()) {
           try {
             errorEl.style.display = 'none';
             if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Verbinde...'; }
-
             await AuthAPI.login(email, password);
             if (loginBtn) loginBtn.textContent = 'Lade Daten...';
             await this._syncFromBackend();
-
+            backendOk = true;
             sessionStorage.setItem(this._sessionKey, 'active');
             if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
             this._showApp();
@@ -1396,25 +1400,24 @@
             return;
           } catch (e) {
             if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
-            if (e.status === 401 || e.status === 400 || e.status === 429) {
-              errorEl.textContent = e.status === 429
-                ? 'Zu viele Anmeldeversuche. Bitte warte einige Minuten.'
-                : 'E-Mail oder Passwort ist falsch.';
+            if (e.status === 429) {
+              errorEl.textContent = 'Zu viele Anmeldeversuche. Bitte warte einige Minuten.';
               errorEl.style.display = 'block';
-              document.getElementById('login-password').value = '';
               return;
             }
-            // Network error → fall through to localStorage
-            console.warn('Backend nicht erreichbar, nutze Offline-Modus:', e.message);
+            // 401/400/network → fall through to localStorage
+            console.warn('Backend-Login fehlgeschlagen, versuche lokal:', e.message || e);
           }
         }
 
-        // ── Fallback: localStorage auth (offline) ──
+        // ── Fallback: localStorage auth ──
         const auth = JSON.parse(localStorage.getItem(this._authKey));
         if (!auth) return;
 
         const hash = await this._sha256(password);
         if (email === auth.email && hash === auth.passwordHash) {
+          // Load seed data if localStorage has no companies
+          await this._loadSeedIfEmpty();
           sessionStorage.setItem(this._sessionKey, 'active');
           this._showApp();
           Router.init();
@@ -1422,6 +1425,26 @@
           errorEl.textContent = 'E-Mail oder Passwort ist falsch.';
           errorEl.style.display = 'block';
           document.getElementById('login-password').value = '';
+        }
+      },
+
+      // ── Load seed data from static JSON if localStorage is empty ──
+      async _loadSeedIfEmpty() {
+        try {
+          const existing = localStorage.getItem('novarix_data');
+          if (existing) {
+            const parsed = JSON.parse(existing);
+            if (parsed.ueberProjekte && parsed.ueberProjekte.length > 0) return; // already has data
+          }
+          const res = await fetch('/seed-data.json');
+          if (!res.ok) return;
+          const seed = await res.json();
+          if (seed && seed.ueberProjekte && seed.ueberProjekte.length > 0) {
+            localStorage.setItem('novarix_data', JSON.stringify(seed));
+            console.log('Seed-Daten geladen:', seed.ueberProjekte.length, 'Firmen');
+          }
+        } catch (e) {
+          console.warn('Seed-Daten nicht verfügbar:', e.message);
         }
       },
 

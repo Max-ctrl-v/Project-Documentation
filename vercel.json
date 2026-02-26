@@ -3,6 +3,7 @@
   "outputDirectory": ".",
   "routes": [
     { "src": "/api-client.js", "dest": "/api-client.js" },
+    { "src": "/seed-data.json", "dest": "/seed-data.json" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
