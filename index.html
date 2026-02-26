@@ -1295,13 +1295,17 @@
       _authKey: 'novarix_auth',
       _sessionKey: 'novarix_session',
 
+      _hasBackend() {
+        return typeof AuthAPI !== 'undefined' && typeof apiFetch === 'function';
+      },
+
       async _sha256(str) {
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
         return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
       },
 
       async init() {
-        // Initialize default credentials on first visit
+        // Initialize default credentials on first visit (offline fallback)
         if (!localStorage.getItem(this._authKey)) {
           const hash = await this._sha256(atob('Tm9kZXM0NjUyLg=='));
           localStorage.setItem(this._authKey, JSON.stringify({
@@ -1309,6 +1313,23 @@
             passwordHash: hash
           }));
         }
+
+        // Try auto-login with existing refresh token
+        if (this._hasBackend() && TokenManager.hasTokens()) {
+          try {
+            const ok = await refreshTokens();
+            if (ok) {
+              await this._syncFromBackend();
+              sessionStorage.setItem(this._sessionKey, 'active');
+              this._showApp();
+              Router.init();
+              return;
+            }
+          } catch (e) {
+            console.warn('Auto-login fehlgeschlagen:', e.message);
+          }
+        }
+
         // Check session
         if (sessionStorage.getItem(this._sessionKey) === 'active') {
           this._showApp();
@@ -1350,6 +1371,7 @@
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const errorEl = document.getElementById('login-error');
+        const loginBtn = document.getElementById('login-btn');
 
         if (!email || !password) {
           errorEl.textContent = 'Bitte E-Mail und Passwort eingeben.';
@@ -1357,6 +1379,37 @@
           return;
         }
 
+        // ── Try backend login first ──
+        if (this._hasBackend()) {
+          try {
+            errorEl.style.display = 'none';
+            if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Verbinde...'; }
+
+            await AuthAPI.login(email, password);
+            if (loginBtn) loginBtn.textContent = 'Lade Daten...';
+            await this._syncFromBackend();
+
+            sessionStorage.setItem(this._sessionKey, 'active');
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
+            this._showApp();
+            Router.init();
+            return;
+          } catch (e) {
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
+            if (e.status === 401 || e.status === 400 || e.status === 429) {
+              errorEl.textContent = e.status === 429
+                ? 'Zu viele Anmeldeversuche. Bitte warte einige Minuten.'
+                : 'E-Mail oder Passwort ist falsch.';
+              errorEl.style.display = 'block';
+              document.getElementById('login-password').value = '';
+              return;
+            }
+            // Network error → fall through to localStorage
+            console.warn('Backend nicht erreichbar, nutze Offline-Modus:', e.message);
+          }
+        }
+
+        // ── Fallback: localStorage auth (offline) ──
         const auth = JSON.parse(localStorage.getItem(this._authKey));
         if (!auth) return;
 
@@ -1369,6 +1422,101 @@
           errorEl.textContent = 'E-Mail oder Passwort ist falsch.';
           errorEl.style.display = 'block';
           document.getElementById('login-password').value = '';
+        }
+      },
+
+      // ── Sync: Backend-Daten → localStorage ──
+      async _syncFromBackend() {
+        try {
+          const backup = await apiFetch('/backup/export');
+          const d = backup.data || backup;
+
+          // Transform flat relational data → nested localStorage format
+          const ueberProjekte = (d.ueberProjekte || []).map(up => {
+            const projekte = (d.projekte || []).filter(p => p.ueberProjektId === up.id).map(p => {
+              const rawAPs = (d.arbeitspakete || []).filter(a => a.projektId === p.id);
+              const topLevel = rawAPs.filter(a => !a.parentId);
+              const arbeitspakete = topLevel.map(ap => {
+                const children = rawAPs.filter(c => c.parentId === ap.id).map(c => ({
+                  id: c.id, name: c.name, beschreibung: c.beschreibung || '',
+                  status: c.status || 'offen',
+                  startDatum: (c.startDatum || '').slice(0, 10),
+                  endDatum: (c.endDatum || '').slice(0, 10),
+                }));
+                return {
+                  id: ap.id, name: ap.name, beschreibung: ap.beschreibung || '',
+                  status: ap.status || 'offen',
+                  startDatum: (ap.startDatum || '').slice(0, 10),
+                  endDatum: (ap.endDatum || '').slice(0, 10),
+                  ...(children.length > 0 ? { unterPakete: children } : {}),
+                };
+              });
+              return {
+                id: p.id, name: p.name, beschreibung: p.beschreibung || '',
+                status: p.status || 'aktiv',
+                startDatum: (p.startDatum || '').slice(0, 10),
+                endDatum: (p.endDatum || '').slice(0, 10),
+                budget: p.budget || undefined,
+                arbeitspakete,
+              };
+            });
+            return {
+              id: up.id, name: up.name, beschreibung: up.beschreibung || '',
+              unternehmensTyp: up.unternehmensTyp || 'kmu',
+              projekte,
+            };
+          });
+
+          const mitarbeiter = (d.mitarbeiter || []).map(ma => {
+            const blockierungen = (d.blockierungen || []).filter(b => b.mitarbeiterId === ma.id).map(b => ({
+              id: b.id, typ: b.typ,
+              von: (b.von || '').slice(0, 10),
+              bis: (b.bis || '').slice(0, 10),
+              notiz: b.notiz || '',
+            }));
+            return {
+              id: ma.id, name: ma.name, position: ma.position || '',
+              wochenStunden: ma.wochenStunden || 40, jahresUrlaub: ma.jahresUrlaub || 30,
+              feiertagePflicht: ma.feiertagePflicht !== false,
+              gehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
+              blockierungen,
+            };
+          });
+
+          const zuweisungen = (d.zuweisungen || []).map(zw => {
+            const apVert = (d.apVerteilungen || []).filter(av => av.zuweisungId === zw.id).map(av => ({
+              arbeitspaketId: av.arbeitspaketId,
+              prozent: av.prozentAnteil || av.prozent,
+            }));
+            return {
+              id: zw.id, mitarbeiterId: zw.mitarbeiterId,
+              projektId: zw.projektId, ueberProjektId: zw.ueberProjektId,
+              prozentAnteil: zw.prozentAnteil,
+              von: (zw.von || '').slice(0, 10),
+              bis: (zw.bis || '').slice(0, 10),
+              arbeitspaketVerteilung: apVert,
+            };
+          });
+
+          const feiertage = (d.feiertage || []).map(f => ({
+            datum: (f.datum || '').slice(0, 10), name: f.name,
+          }));
+
+          const localData = {
+            ueberProjekte, mitarbeiter, zuweisungen, feiertage,
+            exportLog: d.exportLog || [],
+            exportCounter: Array.isArray(d.exportCounter) ? (d.exportCounter[0]?.count || 0) : (d.exportCounter || 0),
+            aenderungsLog: (d.aenderungsLog || []).slice(0, 500).map(l => ({
+              id: l.id, zeitpunkt: l.zeitpunkt, aktion: l.aktion,
+              entitaet: l.entitaet, entitaetId: l.entitaetId,
+              name: l.name || '', details: l.details || '',
+            })),
+          };
+
+          localStorage.setItem('novarix_data', JSON.stringify(localData));
+          console.log('Sync OK:', ueberProjekte.length, 'Firmen,', mitarbeiter.length, 'MA,', zuweisungen.length, 'Zuweisungen');
+        } catch (e) {
+          console.warn('Backend-Sync fehlgeschlagen:', e.message);
         }
       },
 
@@ -1427,6 +1575,7 @@
 
       logout() {
         sessionStorage.removeItem(this._sessionKey);
+        if (this._hasBackend()) AuthAPI.logout().catch(() => {});
         this._showLogin();
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = '';
