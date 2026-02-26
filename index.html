@@ -1794,6 +1794,42 @@
         this._write(data);
       },
 
+      // Externe Entwicklungen (nested in Projekt)
+      getExterneEntwicklungen(ueberProjektId, projektId) {
+        const p = this.getProjekt(ueberProjektId, projektId);
+        return p ? (p.externeEntwicklungen || []) : [];
+      },
+      saveExterneEntwicklung(ueberProjektId, projektId, entry) {
+        const up = this.getUeberProjekt(ueberProjektId);
+        if (!up) return;
+        const p = (up.projekte || []).find(pr => pr.id === projektId);
+        if (!p) return;
+        if (!p.externeEntwicklungen) p.externeEntwicklungen = [];
+        const idx = p.externeEntwicklungen.findIndex(e => e.id === entry.id);
+        const isNew = idx < 0;
+        if (idx >= 0) p.externeEntwicklungen[idx] = entry;
+        else p.externeEntwicklungen.push(entry);
+        const data = this._read();
+        const uidx = data.ueberProjekte.findIndex(u => u.id === up.id);
+        if (uidx >= 0) {
+          const pidx = (data.ueberProjekte[uidx].projekte || []).findIndex(pr => pr.id === projektId);
+          if (pidx >= 0) data.ueberProjekte[uidx].projekte[pidx] = p;
+        }
+        this._write(data);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Externe Entwicklung', entry.id, entry.name);
+      },
+      deleteExterneEntwicklung(ueberProjektId, projektId, entryId) {
+        const data = this._read();
+        const up = data.ueberProjekte.find(u => u.id === ueberProjektId);
+        if (!up) return;
+        const p = (up.projekte || []).find(pr => pr.id === projektId);
+        if (!p || !p.externeEntwicklungen) return;
+        const entry = p.externeEntwicklungen.find(e => e.id === entryId);
+        p.externeEntwicklungen = p.externeEntwicklungen.filter(e => e.id !== entryId);
+        this._write(data);
+        if (entry) this.logChange('gelöscht', 'Externe Entwicklung', entryId, entry.name);
+      },
+
       // Export log
       getExportLog() { return this._read().exportLog; },
       addExportEntry(entry) {
@@ -4635,6 +4671,7 @@
         { id: 'kosten', label: 'Kostenübersicht', icon: '\u20AC' },
         { id: 'personal', label: 'Personalplan', icon: '\u263A' },
         { id: 'foerder', label: 'Förderplan', icon: '\u2691' },
+        { id: 'extern', label: 'Externe Entwicklung', icon: '\uD83D\uDD17' },
       ];
       const tabBar = el('div', { className: 'plan-tabs' });
       const tabPanels = {};
@@ -4748,6 +4785,177 @@
       buildFoerderuebersicht(foerderPanel, up, p, zuweisungen);
       tabPanels['foerder'] = foerderPanel;
       container.appendChild(foerderPanel);
+
+      // ─── Tab 5: Externe Entwicklung ───
+      const externPanel = el('div', { className: 'plan-tab-content' });
+      buildExterneEntwicklung(externPanel, ueberProjektId, projektId);
+      tabPanels['extern'] = externPanel;
+      container.appendChild(externPanel);
+    }
+
+    // --- Externe Entwicklung ---
+    function buildExterneEntwicklung(container, ueberProjektId, projektId) {
+      const entries = DataStore.getExterneEntwicklungen(ueberProjektId, projektId);
+      const section = el('div', { style: { marginTop: '8px' } });
+
+      // Header
+      section.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+        el('h2', { style: { fontSize: '18px', margin: '0', color: '#063838' } }, 'Externe Entwicklung'),
+        el('button', { className: 'btn-secondary', onClick: () => openExterneEntwicklungModal(ueberProjektId, projektId) }, '+ Neue Externe Entwicklung')
+      ));
+
+      if (entries.length === 0) {
+        section.appendChild(renderEmptyState(
+          'Keine Externe Entwicklung',
+          'Erstelle Einträge für externe Entwicklungsleistungen und hänge Dokumente (PDF) an.',
+          '+ Neue Externe Entwicklung',
+          () => openExterneEntwicklungModal(ueberProjektId, projektId)
+        ));
+      } else {
+        for (const entry of entries) {
+          const docs = entry.dokumente || [];
+          const card = el('div', { className: 'card', style: { marginBottom: '16px', padding: '20px' } });
+
+          // Card header
+          card.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: docs.length ? '12px' : '0' } },
+            el('div', null,
+              el('h3', { style: { fontSize: '16px', margin: '0 0 4px', color: '#063838' } }, entry.name),
+              el('span', { style: { fontSize: '13px', color: '#64748B' } }, `${docs.length} Dokument${docs.length !== 1 ? 'e' : ''}`)
+            ),
+            el('div', { style: { display: 'flex', gap: '4px' } },
+              el('button', { className: 'btn-icon', onClick: () => openExterneEntwicklungModal(ueberProjektId, projektId, entry), 'aria-label': 'Bearbeiten' }, '\u270F\uFE0F'),
+              el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${entry.name}" wirklich löschen?`, () => { DataStore.deleteExterneEntwicklung(ueberProjektId, projektId, entry.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1')
+            )
+          ));
+
+          // Document list
+          if (docs.length > 0) {
+            const docList = el('div', { style: { borderTop: '1px solid #E2E8F0', paddingTop: '12px' } });
+            for (const doc of docs) {
+              const sizeStr = doc.size < 1024 * 1024
+                ? `${Math.round(doc.size / 1024)} KB`
+                : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+              docList.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F1F5F9' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                  el('span', { style: { fontSize: '18px' } }, '\uD83D\uDCC4'),
+                  el('div', null,
+                    el('span', { style: { fontSize: '14px', fontWeight: '500', color: '#334155', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#CBD5E1' }, onClick: () => downloadDocument(doc) }, doc.name),
+                    el('span', { style: { fontSize: '12px', color: '#94A3B8', marginLeft: '8px' } }, sizeStr)
+                  )
+                ),
+                el('button', { className: 'btn-icon', style: { fontSize: '14px' }, onClick: () => downloadDocument(doc), 'aria-label': 'Herunterladen' }, '\u2B07\uFE0F')
+              ));
+            }
+            card.appendChild(docList);
+          }
+
+          section.appendChild(card);
+        }
+      }
+      container.appendChild(section);
+    }
+
+    function downloadDocument(doc) {
+      const a = document.createElement('a');
+      a.href = doc.data;
+      a.download = doc.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function openExterneEntwicklungModal(ueberProjektId, projektId, existing) {
+      openModal(existing ? 'Externe Entwicklung bearbeiten' : 'Neue Externe Entwicklung', (body, close) => {
+        const nameInput = el('input', { className: 'form-input', placeholder: 'z.B. API-Integration durch Partnerfirma', value: existing ? existing.name : '' });
+
+        body.appendChild(el('div', { style: { marginBottom: '16px' } },
+          el('label', { className: 'form-label' }, 'Bezeichnung *'),
+          nameInput
+        ));
+
+        // File upload area
+        let pendingDocs = existing ? [...(existing.dokumente || [])] : [];
+
+        const docListContainer = el('div', { style: { marginBottom: '16px' } });
+        function renderDocList() {
+          docListContainer.innerHTML = '';
+          if (pendingDocs.length === 0) return;
+          docListContainer.appendChild(el('label', { className: 'form-label', style: { marginBottom: '8px' } }, 'Angehängte Dokumente'));
+          for (let i = 0; i < pendingDocs.length; i++) {
+            const doc = pendingDocs[i];
+            const sizeStr = doc.size < 1024 * 1024
+              ? `${Math.round(doc.size / 1024)} KB`
+              : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+            const idx = i;
+            docListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, doc.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr)
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { pendingDocs.splice(idx, 1); renderDocList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+        }
+        renderDocList();
+        body.appendChild(docListContainer);
+
+        // Upload zone
+        const fileInput = el('input', { type: 'file', accept: '.pdf', multiple: true, style: { display: 'none' } });
+        const uploadZone = el('div', {
+          style: { border: '2px dashed #CBD5E1', borderRadius: '12px', padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' },
+          onClick: () => fileInput.click(),
+        },
+          el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83D\uDCC1'),
+          el('p', { style: { fontSize: '14px', color: '#475569', margin: '0 0 4px' } }, 'PDF-Dateien hier ablegen oder klicken'),
+          el('p', { style: { fontSize: '12px', color: '#94A3B8', margin: '0' } }, 'Nur PDF-Dateien erlaubt')
+        );
+
+        // Drag & drop
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#0D7377'; uploadZone.style.background = '#F0FDFD'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; });
+        uploadZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadZone.style.borderColor = '#CBD5E1';
+          uploadZone.style.background = '';
+          handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); fileInput.value = ''; });
+
+        function handleFiles(files) {
+          for (const file of files) {
+            if (file.type !== 'application/pdf') { alert(`"${file.name}" ist keine PDF-Datei.`); continue; }
+            if (file.size > 10 * 1024 * 1024) { alert(`"${file.name}" ist zu groß (max. 10 MB).`); continue; }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              pendingDocs.push({ id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type, data: ev.target.result });
+              renderDocList();
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+
+        body.appendChild(uploadZone);
+        body.appendChild(fileInput);
+
+        // Buttons
+        body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' } },
+          el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
+          el('button', { className: 'btn-primary', onClick: () => {
+            const name = nameInput.value.trim();
+            if (!name) { nameInput.style.borderColor = '#DC2626'; return; }
+            const entry = {
+              id: existing ? existing.id : crypto.randomUUID(),
+              name,
+              dokumente: pendingDocs,
+            };
+            DataStore.saveExterneEntwicklung(ueberProjektId, projektId, entry);
+            close();
+            Router.resolve();
+          }}, existing ? 'Speichern' : 'Erstellen')
+        ));
+      });
     }
 
     // --- Arbeitspaket Modal ---
