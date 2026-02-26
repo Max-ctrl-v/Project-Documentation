@@ -1280,9 +1280,9 @@
        On Railway: inject via env or set manually, e.g.:
        window.NOVARIX_API_URL = 'https://your-backend.railway.app/api/v1'; -->
   <script>
-    // Auto-detect: if served from same domain as backend, use relative URL
-    if (!window.NOVARIX_API_URL && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-      // In production, assume backend is at a separate service — leave undefined to use api-client.js default
+    // Production: connect to Railway backend
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      window.NOVARIX_API_URL = 'https://novarix-backend-production.up.railway.app/api/v1';
     }
   </script>
   <script src="api-client.js"></script>
