@@ -1322,7 +1322,9 @@
               sessionStorage.setItem(this._sessionKey, JSON.stringify({
                 email: me.email, name: me.name, role: me.role,
               }));
-              await this._syncFromBackend();
+              try { await this._syncFromBackend(); } catch (syncErr) {
+                console.warn('Daten-Sync fehlgeschlagen:', syncErr.message);
+              }
               this._showApp();
               this._updateSidebarUser();
               Router.init();
@@ -1331,6 +1333,9 @@
           } catch (e) {
             console.warn('Auto-login fehlgeschlagen:', e.message);
           }
+          // Auto-login failed — clear stale tokens so login form works fresh
+          TokenManager.clear();
+          sessionStorage.removeItem(this._sessionKey);
         }
 
         // Pre-load seed data on first visit
@@ -1407,23 +1412,30 @@
             sessionStorage.setItem(this._sessionKey, JSON.stringify({
               email: user.email, name: user.name, role: user.role,
             }));
-            // Sync data from backend
-            await this._syncFromBackend();
+            // Sync data from backend (non-fatal — login still succeeds)
+            try { await this._syncFromBackend(); } catch (syncErr) {
+              console.warn('Daten-Sync fehlgeschlagen, nutze lokale Daten:', syncErr.message);
+              await this._loadSeedIfEmpty();
+            }
             if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
             this._showApp();
             this._updateSidebarUser();
             Router.init();
             return;
           } catch (e) {
-            // If backend returned auth error, show it
-            if (e.status === 401 || e.status === 400) {
-              errorEl.textContent = 'E-Mail oder Passwort ist falsch.';
+            // Auth error (wrong credentials, rate limited, etc.) — show message
+            if (e.status && e.status !== 0) {
+              if (e.status === 429) {
+                errorEl.textContent = 'Zu viele Login-Versuche. Bitte warten Sie einige Minuten.';
+              } else {
+                errorEl.textContent = e.message || 'E-Mail oder Passwort ist falsch.';
+              }
               errorEl.style.display = 'block';
               document.getElementById('login-password').value = '';
               if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
               return;
             }
-            // Network error or server down — fall through to seed data
+            // Network error (no status) — fall through to seed data
             console.warn('Backend nicht erreichbar, nutze lokale Daten:', e.message);
           }
         }

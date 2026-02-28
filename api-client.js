@@ -89,10 +89,21 @@ async function refreshTokens() {
 // ─── Auth API ─────────────────────────────────────────────────
 const AuthAPI = {
   async login(email, password) {
-    const data = await apiFetch('/auth/login', {
+    // Use fetch directly — NOT apiFetch — to avoid the 401→refresh
+    // interception, which would misinterpret "wrong password" as "expired token"
+    const url = `${API_BASE}/auth/login`;
+    const res = await fetch(url, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      const error = new Error(err.error || err.message || `HTTP ${res.status}`);
+      error.status = res.status;
+      throw error;
+    }
+    const data = await res.json();
     TokenManager.setTokens(data.accessToken, data.refreshToken);
     return data.user;
   },
