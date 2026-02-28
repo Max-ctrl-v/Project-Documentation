@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js" integrity="sha384-GwHhSt8QjC7J+v0zZ0Flfho/T76YHEcCL9w4rvjTIUHauh6gWJeBSIi3vWXxNhtA" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js" integrity="sha384-voAWf+DQNBx+Eya8tGEw2DHSo8aPM0bTyJhi+ZbLLfV6HzrvPV/UqIvc3+ULj7bS" crossorigin="anonymous"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -1293,31 +1293,10 @@
     // AuthSystem — Login / Session / Password Reset
     // =========================================================================
     const AuthSystem = {
-      _authKey: 'novarix_auth',
       _sessionKey: 'novarix_session',
-
-      // ── Account definitions ──
-      _accounts: [
-        { email: 'm.nodes@novaris-consulting.de', password: 'Nodes4652.', name: 'M. Nodes', role: 'admin' },
-        { email: 'm.menz@novaris-consulting.de', password: 'Menz4652.', name: 'M. Menz', role: 'user' },
-        { email: 's.abdalla@novaris-consulting.de', password: 'Abdalla4652.', name: 'S. Abdalla', role: 'user' },
-      ],
 
       _hasBackend() {
         return typeof AuthAPI !== 'undefined' && typeof apiFetch === 'function';
-      },
-
-      async _sha256(str) {
-        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-      },
-
-      async _initAccounts() {
-        const hashed = [];
-        for (const a of this._accounts) {
-          hashed.push({ email: a.email, passwordHash: await this._sha256(a.password), name: a.name, role: a.role });
-        }
-        localStorage.setItem(this._authKey, JSON.stringify(hashed));
       },
 
       getCurrentUser() {
@@ -1334,16 +1313,16 @@
       },
 
       async init() {
-        // Always reset accounts to the defined list
-        await this._initAccounts();
-
         // Try auto-login with existing refresh token
         if (this._hasBackend() && TokenManager.hasTokens()) {
           try {
             const ok = await refreshTokens();
             if (ok) {
+              const me = await AuthAPI.me();
+              sessionStorage.setItem(this._sessionKey, JSON.stringify({
+                email: me.email, name: me.name, role: me.role,
+              }));
               await this._syncFromBackend();
-              // Keep existing session user
               this._showApp();
               this._updateSidebarUser();
               Router.init();
@@ -1417,30 +1396,42 @@
           return;
         }
 
-        // ── Check against accounts list ──
-        const accounts = JSON.parse(localStorage.getItem(this._authKey)) || [];
-        const hash = await this._sha256(password);
-        const matched = accounts.find(a => a.email.toLowerCase() === email && a.passwordHash === hash);
+        if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Anmelden...'; }
+        errorEl.style.display = 'none';
 
-        if (!matched) {
-          errorEl.textContent = 'E-Mail oder Passwort ist falsch.';
-          errorEl.style.display = 'block';
-          document.getElementById('login-password').value = '';
-          return;
-        }
-
-        // Login successful
-        if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Lade Daten...'; }
-        await this._loadSeedIfEmpty();
-
-        // Try backend sync in background (non-blocking)
+        // ── Try backend login first ──
         if (this._hasBackend()) {
-          this._syncFromBackend().catch(() => {});
+          try {
+            const user = await AuthAPI.login(email, password);
+            // Backend login successful — store session
+            sessionStorage.setItem(this._sessionKey, JSON.stringify({
+              email: user.email, name: user.name, role: user.role,
+            }));
+            // Sync data from backend
+            await this._syncFromBackend();
+            if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
+            this._showApp();
+            this._updateSidebarUser();
+            Router.init();
+            return;
+          } catch (e) {
+            // If backend returned auth error, show it
+            if (e.status === 401 || e.status === 400) {
+              errorEl.textContent = 'E-Mail oder Passwort ist falsch.';
+              errorEl.style.display = 'block';
+              document.getElementById('login-password').value = '';
+              if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
+              return;
+            }
+            // Network error or server down — fall through to seed data
+            console.warn('Backend nicht erreichbar, nutze lokale Daten:', e.message);
+          }
         }
 
-        // Store session with user info
+        // ── Fallback: load seed data and allow access (offline mode) ──
+        await this._loadSeedIfEmpty();
         sessionStorage.setItem(this._sessionKey, JSON.stringify({
-          email: matched.email, name: matched.name, role: matched.role,
+          email, name: email.split('@')[0], role: 'viewer',
         }));
 
         if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
@@ -1492,7 +1483,7 @@
                   status: ap.status || 'offen',
                   startDatum: (ap.startDatum || '').slice(0, 10),
                   endDatum: (ap.endDatum || '').slice(0, 10),
-                  ...(children.length > 0 ? { unterPakete: children } : {}),
+                  ...(children.length > 0 ? { unterArbeitspakete: children } : {}),
                 };
               });
               return {
@@ -1522,7 +1513,7 @@
               id: ma.id, name: ma.name, position: ma.position || '',
               wochenStunden: ma.wochenStunden || 40, jahresUrlaub: ma.jahresUrlaub || 30,
               feiertagePflicht: ma.feiertagePflicht !== false,
-              gehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
+              jahresgehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
               blockierungen,
             };
           });
@@ -1530,7 +1521,7 @@
           const zuweisungen = (d.zuweisungen || []).map(zw => {
             const apVert = (d.apVerteilungen || []).filter(av => av.zuweisungId === zw.id).map(av => ({
               arbeitspaketId: av.arbeitspaketId,
-              prozent: av.prozentAnteil || av.prozent,
+              prozentAnteil: av.prozentAnteil || av.prozent,
             }));
             return {
               id: zw.id, mitarbeiterId: zw.mitarbeiterId,
@@ -1565,7 +1556,6 @@
       },
 
       async handleReset() {
-        const accounts = JSON.parse(localStorage.getItem(this._authKey)) || [];
         const msgEl = document.getElementById('reset-message');
 
         if (this._resetStep === 'email') {
@@ -1575,33 +1565,10 @@
             msgEl.textContent = 'Bitte E-Mail eingeben.';
             return;
           }
-          const found = accounts.find(a => a.email.toLowerCase() === email);
-          if (!found) {
-            msgEl.style.display = 'block'; msgEl.style.background = '#FEF2F2'; msgEl.style.border = '1px solid #FECACA'; msgEl.style.color = '#DC2626';
-            msgEl.textContent = 'E-Mail Adresse nicht gefunden.';
-            return;
-          }
           this._resetEmail = email;
-          msgEl.style.display = 'block'; msgEl.style.background = '#F0FDF4'; msgEl.style.border = '1px solid #BBF7D0'; msgEl.style.color = '#16A34A';
-          msgEl.textContent = 'E-Mail verifiziert. Bitte neues Passwort eingeben.';
-          document.getElementById('reset-new-pw').style.display = 'block';
-          this._resetStep = 'password';
-        } else {
-          const newPw = document.getElementById('reset-new-password').value;
-          if (!newPw || newPw.length < 6) {
-            msgEl.style.display = 'block'; msgEl.style.background = '#FEF2F2'; msgEl.style.border = '1px solid #FECACA'; msgEl.style.color = '#DC2626';
-            msgEl.textContent = 'Passwort muss mindestens 6 Zeichen lang sein.';
-            return;
-          }
-          const acc = accounts.find(a => a.email.toLowerCase() === this._resetEmail);
-          if (acc) {
-            acc.passwordHash = await this._sha256(newPw);
-            localStorage.setItem(this._authKey, JSON.stringify(accounts));
-          }
-          msgEl.style.display = 'block'; msgEl.style.background = '#F0FDF4'; msgEl.style.border = '1px solid #BBF7D0'; msgEl.style.color = '#16A34A';
-          msgEl.textContent = 'Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.';
-          document.getElementById('reset-new-pw').style.display = 'none';
-          setTimeout(() => this.showLogin(), 2000);
+          msgEl.style.display = 'block'; msgEl.style.background = '#FFF7ED'; msgEl.style.border = '1px solid #FED7AA'; msgEl.style.color = '#C2410C';
+          msgEl.textContent = 'Bitte kontaktieren Sie einen Administrator, um Ihr Passwort zurückzusetzen.';
+          setTimeout(() => this.showLogin(), 3000);
         }
       },
 
@@ -1682,8 +1649,7 @@
         const isNew = idx < 0;
         if (idx >= 0) data.ueberProjekte[idx] = up;
         else data.ueberProjekte.push(up);
-        this._write(data);
-        this.logChange(isNew ? 'erstellt' : 'geändert', 'Firma', up.id, up.name);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Firma', up.id, up.name, undefined, data);
       },
       deleteUeberProjekt(id) {
         const data = this._read();
@@ -1692,9 +1658,10 @@
           const projektIds = (up.projekte || []).map(p => p.id);
           data.zuweisungen = data.zuweisungen.filter(z => z.ueberProjektId !== id);
           data.ueberProjekte = data.ueberProjekte.filter(u => u.id !== id);
+          this.logChange('gelöscht', 'Firma', id, up.name, undefined, data);
+        } else {
+          this._write(data);
         }
-        this._write(data);
-        if (up) this.logChange('gelöscht', 'Firma', id, up.name);
       },
 
       // Projekte (nested in ÜP)
@@ -1723,8 +1690,7 @@
         const data = this._read();
         const uidx = data.ueberProjekte.findIndex(u => u.id === up.id);
         if (uidx >= 0) data.ueberProjekte[uidx] = up;
-        this._write(data);
-        this.logChange(isNew ? 'erstellt' : 'geändert', 'Projekt', projekt.id, projekt.name, `in ${up.name}`);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Projekt', projekt.id, projekt.name, `in ${up.name}`, data);
       },
       deleteProjekt(ueberProjektId, projektId) {
         const data = this._read();
@@ -1736,8 +1702,7 @@
           up.projekte = (up.projekte || []).filter(p => p.id !== projektId);
           data.zuweisungen = data.zuweisungen.filter(z => z.projektId !== projektId);
         }
-        this._write(data);
-        this.logChange('gelöscht', 'Projekt', projektId, pName, up ? `aus ${up.name}` : '');
+        this.logChange('gelöscht', 'Projekt', projektId, pName, up ? `aus ${up.name}` : '', data);
       },
 
       // Mitarbeiter
@@ -1749,16 +1714,18 @@
         const isNew = idx < 0;
         if (idx >= 0) data.mitarbeiter[idx] = ma;
         else data.mitarbeiter.push(ma);
-        this._write(data);
-        this.logChange(isNew ? 'erstellt' : 'geändert', 'Mitarbeiter', ma.id, ma.name);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Mitarbeiter', ma.id, ma.name, undefined, data);
       },
       deleteMitarbeiter(id) {
         const data = this._read();
         const ma = data.mitarbeiter.find(m => m.id === id);
         data.mitarbeiter = data.mitarbeiter.filter(m => m.id !== id);
         data.zuweisungen = data.zuweisungen.filter(z => z.mitarbeiterId !== id);
-        this._write(data);
-        if (ma) this.logChange('gelöscht', 'Mitarbeiter', id, ma.name);
+        if (ma) {
+          this.logChange('gelöscht', 'Mitarbeiter', id, ma.name, undefined, data);
+        } else {
+          this._write(data);
+        }
       },
 
       // Zuweisungen
@@ -1772,18 +1739,18 @@
         const isNew = idx < 0;
         if (idx >= 0) data.zuweisungen[idx] = zw;
         else data.zuweisungen.push(zw);
-        this._write(data);
-        const ma = this.getMitarbeiterById(zw.mitarbeiterId);
-        this.logChange(isNew ? 'erstellt' : 'geändert', 'Zuweisung', zw.id, ma ? ma.name : 'Unbekannt', `${zw.prozentAnteil}%, ${zw.von} – ${zw.bis}`);
+        const ma = (data.mitarbeiter || []).find(m => m.id === zw.mitarbeiterId);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Zuweisung', zw.id, ma ? ma.name : 'Unbekannt', `${zw.prozentAnteil}%, ${zw.von} – ${zw.bis}`, data);
       },
       deleteZuweisung(id) {
         const data = this._read();
         const zw = data.zuweisungen.find(z => z.id === id);
         data.zuweisungen = data.zuweisungen.filter(z => z.id !== id);
-        this._write(data);
         if (zw) {
-          const ma = this.getMitarbeiterById(zw.mitarbeiterId);
-          this.logChange('gelöscht', 'Zuweisung', id, ma ? ma.name : 'Unbekannt');
+          const ma = (data.mitarbeiter || []).find(m => m.id === zw.mitarbeiterId);
+          this.logChange('gelöscht', 'Zuweisung', id, ma ? ma.name : 'Unbekannt', undefined, data);
+        } else {
+          this._write(data);
         }
       },
 
@@ -1826,8 +1793,7 @@
           const pidx = (data.ueberProjekte[uidx].projekte || []).findIndex(pr => pr.id === projektId);
           if (pidx >= 0) data.ueberProjekte[uidx].projekte[pidx] = p;
         }
-        this._write(data);
-        this.logChange(isNew ? 'erstellt' : 'geändert', 'Externe Entwicklung', entry.id, entry.name);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Externe Entwicklung', entry.id, entry.name, undefined, data);
       },
       deleteExterneEntwicklung(ueberProjektId, projektId, entryId) {
         const data = this._read();
@@ -1837,8 +1803,11 @@
         if (!p || !p.externeEntwicklungen) return;
         const entry = p.externeEntwicklungen.find(e => e.id === entryId);
         p.externeEntwicklungen = p.externeEntwicklungen.filter(e => e.id !== entryId);
-        this._write(data);
-        if (entry) this.logChange('gelöscht', 'Externe Entwicklung', entryId, entry.name);
+        if (entry) {
+          this.logChange('gelöscht', 'Externe Entwicklung', entryId, entry.name, undefined, data);
+        } else {
+          this._write(data);
+        }
       },
 
       // Export log
@@ -1859,8 +1828,8 @@
 
       // Änderungsprotokoll (GoBD)
       getAenderungsLog() { return this._read().aenderungsLog || []; },
-      logChange(aktion, entitaet, entitaetId, name, details) {
-        const data = this._read();
+      logChange(aktion, entitaet, entitaetId, name, details, _data) {
+        const data = _data || this._read();
         if (!data.aenderungsLog) data.aenderungsLog = [];
         data.aenderungsLog.push({
           id: crypto.randomUUID(),
@@ -1876,15 +1845,10 @@
         return (this._read().exportLog || []).filter(e => e.referenzId === referenzId);
       },
 
-      // Simple hash for data integrity (GoBD)
-      hashData(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-          const c = str.charCodeAt(i);
-          hash = ((hash << 5) - hash) + c;
-          hash |= 0;
-        }
-        return 'H' + Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
+      // SHA-256 hash for data integrity (GoBD)
+      async hashData(str) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return 'H' + Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase().slice(0, 16);
       },
 
       // Full export / import
@@ -2137,14 +2101,17 @@
 
       backdrop.appendChild(content);
       backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(backdrop); });
-      document.addEventListener('keydown', function handler(e) {
-        if (e.key === 'Escape') { closeModal(backdrop); document.removeEventListener('keydown', handler); }
-      });
+      function escHandler(e) {
+        if (e.key === 'Escape') closeModal(backdrop);
+      }
+      document.addEventListener('keydown', escHandler);
+      backdrop._escHandler = escHandler;
       root.appendChild(backdrop);
       requestAnimationFrame(() => backdrop.classList.add('visible'));
     }
 
     function closeModal(backdrop) {
+      if (backdrop._escHandler) document.removeEventListener('keydown', backdrop._escHandler);
       backdrop.classList.remove('visible');
       setTimeout(() => backdrop.remove(), 200);
     }
@@ -2205,8 +2172,12 @@
         this.routes['#/dashboard'](main);
       },
 
+      _initialized: false,
       init() {
-        window.addEventListener('hashchange', () => this.resolve());
+        if (!this._initialized) {
+          window.addEventListener('hashchange', () => this.resolve());
+          this._initialized = true;
+        }
         this.resolve();
       },
     };
@@ -2522,9 +2493,13 @@
       };
 
       gridEl.addEventListener('mouseup', endDrag);
-      document.addEventListener('mouseup', () => { if (dragging) endDrag(); });
+      const docMouseUp = () => { if (dragging) endDrag(); };
+      document.addEventListener('mouseup', docMouseUp);
 
-      return { reset: () => { dragging = false; anchor = null; current = null; updateVisual(); } };
+      return {
+        reset: () => { dragging = false; anchor = null; current = null; updateVisual(); },
+        destroy: () => { document.removeEventListener('mouseup', docMouseUp); },
+      };
     }
 
     // --- Mitarbeiter-Kalender ---
@@ -2537,8 +2512,10 @@
       const feiertage = DataStore.getFeiertage();
       let curYear = new Date().getFullYear();
       let curMonth = new Date().getMonth();
+      let _rangeSelection = null;
 
       function render() {
+        if (_rangeSelection) { _rangeSelection.destroy(); _rangeSelection = null; }
         container.innerHTML = '';
         const freshMa = DataStore.getMitarbeiterById(maId);
         if (!freshMa) return;
@@ -2656,7 +2633,7 @@
         container.appendChild(grid);
 
         // Wire range selection
-        attachRangeSelection(grid, (von, bis, wasDrag) => {
+        _rangeSelection = attachRangeSelection(grid, (von, bis, wasDrag) => {
           const typ = classifyDay(von, freshMa, feiertage);
           if (!wasDrag && (typ === 'urlaub' || typ === 'krank')) {
             // Clicked on existing blockierung → show detail
@@ -2783,6 +2760,7 @@
     function renderProjektKalender(container, ueberProjektId, projektId) {
       const up = DataStore.getUeberProjekt(ueberProjektId);
       if (!up) { container.appendChild(renderEmptyState('Über-Projekt nicht gefunden', '', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
+      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Dieses Projekt ist nur für Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
       const p = (up.projekte || []).find(pr => pr.id === projektId);
       if (!p) { container.appendChild(renderEmptyState('Projekt nicht gefunden', '', 'Zurück', () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`))); return; }
 
@@ -2982,6 +2960,7 @@
     function renderApKalender(container, ueberProjektId, projektId, apId) {
       const up = DataStore.getUeberProjekt(ueberProjektId);
       if (!up) { container.appendChild(renderEmptyState('Über-Projekt nicht gefunden', '', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
+      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Dieses Projekt ist nur für Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
       const p = (up.projekte || []).find(pr => pr.id === projektId);
       if (!p) { container.appendChild(renderEmptyState('Projekt nicht gefunden', '', 'Zurück', () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`))); return; }
       const ap = findApInTree(p.arbeitspakete || [], apId);
@@ -4664,6 +4643,7 @@
     function renderProjekt(container, ueberProjektId, projektId) {
       const up = DataStore.getUeberProjekt(ueberProjektId);
       if (!up) { container.appendChild(el('p', { style: { color: '#DC2626' } }, 'Über-Projekt nicht gefunden.')); return; }
+      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Dieses Projekt ist nur für Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
       const p = (up.projekte || []).find(pr => pr.id === projektId);
       if (!p) { container.appendChild(el('p', { style: { color: '#DC2626' } }, 'Projekt nicht gefunden.')); return; }
 
@@ -4730,7 +4710,7 @@
       }
       container.appendChild(tabBar);
 
-      // ─── Tab 1: Plan & Zeitplan ───
+      // ─── Tab 1: Plan & Zeitplan (rendered immediately) ───
       const planPanel = el('div', { className: 'plan-tab-content active' });
       const apTimelineContainer = el('div');
       buildApTimeline(apTimelineContainer, p, ueberProjektId, projektId);
@@ -4738,87 +4718,93 @@
       tabPanels['plan'] = planPanel;
       container.appendChild(planPanel);
 
-      // ─── Tab 2: Kostenübersicht ───
-      const kostenPanel = el('div', { className: 'plan-tab-content' });
+      // ─── Lazy tab builders (render on first switch) ───
+      const lazyBuilt = { plan: true };
       const zuweisungen = DataStore.getZuweisungenForProjekt(projektId);
-      buildCostOverview(kostenPanel, p, zuweisungen);
-      tabPanels['kosten'] = kostenPanel;
-      container.appendChild(kostenPanel);
 
-      // ─── Tab 3: Personalplan (Zuweisungen) ───
-      const personalPanel = el('div', { className: 'plan-tab-content' });
-      const zwSection = el('div', { style: { marginTop: '8px' } });
-      zwSection.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
-        el('h2', { style: { fontSize: '18px', margin: '0', color: '#063838' } }, 'Zuweisungen'),
-        el('button', { className: 'btn-secondary', onClick: () => openZuweisungModal(ueberProjektId, projektId) }, '+ Mitarbeiter zuweisen')
-      ));
-
-      if (zuweisungen.length === 0) {
-        zwSection.appendChild(renderEmptyState(
-          'Keine Zuweisungen',
-          'Weise Mitarbeiter diesem Projekt zu, um die Arbeitszeit zu verteilen.',
-          '+ Mitarbeiter zuweisen',
-          () => openZuweisungModal(ueberProjektId, projektId)
+      function buildPersonalPanel(panel) {
+        const zwSection = el('div', { style: { marginTop: '8px' } });
+        zwSection.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+          el('h2', { style: { fontSize: '18px', margin: '0', color: '#063838' } }, 'Zuweisungen'),
+          el('button', { className: 'btn-secondary', onClick: () => openZuweisungModal(ueberProjektId, projektId) }, '+ Mitarbeiter zuweisen')
         ));
-      } else {
-        const table = el('table', { className: 'data-table' });
-        const thead = el('thead', null, el('tr', null,
-          el('th', null, 'Mitarbeiter'),
-          el('th', null, 'Anteil'),
-          el('th', null, 'Zeitraum'),
-          el('th', null, 'Verfügb. Tage'),
-          el('th', null, 'Projekt-Tage'),
-          el('th', null, 'Kosten'),
-          el('th', { style: { width: '60px' } }, '')
-        ));
-        table.appendChild(thead);
-        const tbody = el('tbody');
-        let totalProjektKosten = 0;
-        for (const zw of zuweisungen) {
-          const ma = DataStore.getMitarbeiterById(zw.mitarbeiterId);
-          const calc = CalcEngine.calculateCosts(zw.mitarbeiterId, zw.prozentAnteil, zw.von, zw.bis, zw.arbeitspaketVerteilung);
-          totalProjektKosten += calc.projektKosten;
-          tbody.appendChild(el('tr', null,
-            el('td', { style: { fontWeight: '500' } }, ma ? ma.name : 'Unbekannt'),
-            el('td', null, `${zw.prozentAnteil}%`),
-            el('td', null, `${formatDate(zw.von)} – ${formatDate(zw.bis)}`),
-            el('td', null, `${calc.verfuegbar}`),
-            el('td', { style: { fontWeight: '600', color: '#0D7377' } }, `${calc.projektTage}`),
-            el('td', { style: { fontWeight: '600', color: '#F59E0B' } }, formatEuro(calc.projektKosten)),
-            el('td', { style: { display: 'flex', gap: '4px' } },
-              el('button', { className: 'btn-icon', onClick: () => openZuweisungModal(ueberProjektId, projektId, zw), 'aria-label': 'Bearbeiten' }, '\u270F\uFE0F'),
-              el('button', { className: 'btn-icon', onClick: () => confirmDialog('Zuweisung löschen?', () => { DataStore.deleteZuweisung(zw.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1')
-            )
+        const zwList = DataStore.getZuweisungenForProjekt(projektId);
+        if (zwList.length === 0) {
+          zwSection.appendChild(renderEmptyState(
+            'Keine Zuweisungen',
+            'Weise Mitarbeiter diesem Projekt zu, um die Arbeitszeit zu verteilen.',
+            '+ Mitarbeiter zuweisen',
+            () => openZuweisungModal(ueberProjektId, projektId)
           ));
-        }
-        table.appendChild(tbody);
-        if (totalProjektKosten > 0) {
-          const tfoot = el('tfoot', null, el('tr', { style: { background: '#FEF3C7' } },
-            el('td', { colSpan: '5', style: { textAlign: 'right', paddingRight: '12px', fontWeight: '700', color: '#063838' } }, 'Gesamt-Projektkosten:'),
-            el('td', { style: { fontWeight: '700', color: '#92400E' } }, formatEuro(totalProjektKosten)),
-            el('td', null, '')
+        } else {
+          const table = el('table', { className: 'data-table' });
+          const thead = el('thead', null, el('tr', null,
+            el('th', null, 'Mitarbeiter'),
+            el('th', null, 'Anteil'),
+            el('th', null, 'Zeitraum'),
+            el('th', null, 'Verfügb. Tage'),
+            el('th', null, 'Projekt-Tage'),
+            el('th', null, 'Kosten'),
+            el('th', { style: { width: '60px' } }, '')
           ));
-          table.appendChild(tfoot);
+          table.appendChild(thead);
+          const tbody = el('tbody');
+          let totalProjektKosten = 0;
+          for (const zw of zwList) {
+            const ma = DataStore.getMitarbeiterById(zw.mitarbeiterId);
+            const calc = CalcEngine.calculateCosts(zw.mitarbeiterId, zw.prozentAnteil, zw.von, zw.bis, zw.arbeitspaketVerteilung);
+            totalProjektKosten += calc.projektKosten;
+            tbody.appendChild(el('tr', null,
+              el('td', { style: { fontWeight: '500' } }, ma ? ma.name : 'Unbekannt'),
+              el('td', null, `${zw.prozentAnteil}%`),
+              el('td', null, `${formatDate(zw.von)} – ${formatDate(zw.bis)}`),
+              el('td', null, `${calc.verfuegbar}`),
+              el('td', { style: { fontWeight: '600', color: '#0D7377' } }, `${calc.projektTage}`),
+              el('td', { style: { fontWeight: '600', color: '#F59E0B' } }, formatEuro(calc.projektKosten)),
+              el('td', { style: { display: 'flex', gap: '4px' } },
+                el('button', { className: 'btn-icon', onClick: () => openZuweisungModal(ueberProjektId, projektId, zw), 'aria-label': 'Bearbeiten' }, '\u270F\uFE0F'),
+                el('button', { className: 'btn-icon', onClick: () => confirmDialog('Zuweisung löschen?', () => { DataStore.deleteZuweisung(zw.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1')
+              )
+            ));
+          }
+          table.appendChild(tbody);
+          if (totalProjektKosten > 0) {
+            const tfoot = el('tfoot', null, el('tr', { style: { background: '#FEF3C7' } },
+              el('td', { colSpan: '5', style: { textAlign: 'right', paddingRight: '12px', fontWeight: '700', color: '#063838' } }, 'Gesamt-Projektkosten:'),
+              el('td', { style: { fontWeight: '700', color: '#92400E' } }, formatEuro(totalProjektKosten)),
+              el('td', null, '')
+            ));
+            table.appendChild(tfoot);
+          }
+          const tableWrap = el('div', { className: 'card', style: { padding: '0', overflow: 'auto' } });
+          tableWrap.appendChild(table);
+          zwSection.appendChild(tableWrap);
         }
-        const tableWrap = el('div', { className: 'card', style: { padding: '0', overflow: 'auto' } });
-        tableWrap.appendChild(table);
-        zwSection.appendChild(tableWrap);
+        panel.appendChild(zwSection);
       }
-      personalPanel.appendChild(zwSection);
-      tabPanels['personal'] = personalPanel;
-      container.appendChild(personalPanel);
 
-      // ─── Tab 4: Förderplan ───
-      const foerderPanel = el('div', { className: 'plan-tab-content' });
-      buildFoerderuebersicht(foerderPanel, up, p, zuweisungen);
-      tabPanels['foerder'] = foerderPanel;
-      container.appendChild(foerderPanel);
+      const lazyTabs = {
+        kosten: (panel) => buildCostOverview(panel, p, zuweisungen),
+        personal: (panel) => buildPersonalPanel(panel),
+        foerder: (panel) => buildFoerderuebersicht(panel, up, p, zuweisungen),
+        extern: (panel) => buildExterneEntwicklung(panel, ueberProjektId, projektId),
+      };
 
-      // ─── Tab 5: Externe Entwicklung ───
-      const externPanel = el('div', { className: 'plan-tab-content' });
-      buildExterneEntwicklung(externPanel, ueberProjektId, projektId);
-      tabPanels['extern'] = externPanel;
-      container.appendChild(externPanel);
+      // Create empty panels, build on first switch
+      for (const tabId of ['kosten', 'personal', 'foerder', 'extern']) {
+        const panel = el('div', { className: 'plan-tab-content' });
+        tabPanels[tabId] = panel;
+        container.appendChild(panel);
+      }
+
+      const origSwitchTab = switchTab;
+      switchTab = function(tabId) {
+        if (!lazyBuilt[tabId] && lazyTabs[tabId]) {
+          lazyTabs[tabId](tabPanels[tabId]);
+          lazyBuilt[tabId] = true;
+        }
+        origSwitchTab(tabId);
+      };
     }
 
     // --- Externe Entwicklung ---
@@ -4954,7 +4940,7 @@
         function handleFiles(files) {
           for (const file of files) {
             if (file.type !== 'application/pdf') { alert(`"${file.name}" ist keine PDF-Datei.`); continue; }
-            if (file.size > 10 * 1024 * 1024) { alert(`"${file.name}" ist zu groß (max. 10 MB).`); continue; }
+            if (file.size > 2 * 1024 * 1024) { alert(`"${file.name}" ist zu groß (max. 2 MB).`); continue; }
             const reader = new FileReader();
             reader.onload = (ev) => {
               pendingDocs.push({ id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type, data: ev.target.result });
@@ -5484,7 +5470,7 @@
     }
 
     function loadDefaultFeiertage() {
-      const year = new Date().getFullYear();
+      const baseYear = new Date().getFullYear();
       // Easter calculation (Gauss algorithm)
       function easterSunday(y) {
         const a = y % 19, b = Math.floor(y / 100), c = y % 100;
@@ -5497,21 +5483,24 @@
         const day = ((h + l - 7 * m + 114) % 31) + 1;
         return new Date(y, month - 1, day);
       }
-      const easter = easterSunday(year);
       function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r.toISOString().slice(0, 10); }
-      const easterStr = easter.toISOString().slice(0, 10);
 
-      const defaults = [
-        { datum: `${year}-01-01`, name: 'Neujahr' },
-        { datum: addDays(easter, -2), name: 'Karfreitag' },
-        { datum: addDays(easter, 1), name: 'Ostermontag' },
-        { datum: `${year}-05-01`, name: 'Tag der Arbeit' },
-        { datum: addDays(easter, 39), name: 'Christi Himmelfahrt' },
-        { datum: addDays(easter, 50), name: 'Pfingstmontag' },
-        { datum: `${year}-10-03`, name: 'Tag der Deutschen Einheit' },
-        { datum: `${year}-12-25`, name: '1. Weihnachtstag' },
-        { datum: `${year}-12-26`, name: '2. Weihnachtstag' },
-      ];
+      function feiertageFuerJahr(year) {
+        const easter = easterSunday(year);
+        return [
+          { datum: `${year}-01-01`, name: 'Neujahr' },
+          { datum: addDays(easter, -2), name: 'Karfreitag' },
+          { datum: addDays(easter, 1), name: 'Ostermontag' },
+          { datum: `${year}-05-01`, name: 'Tag der Arbeit' },
+          { datum: addDays(easter, 39), name: 'Christi Himmelfahrt' },
+          { datum: addDays(easter, 50), name: 'Pfingstmontag' },
+          { datum: `${year}-10-03`, name: 'Tag der Deutschen Einheit' },
+          { datum: `${year}-12-25`, name: '1. Weihnachtstag' },
+          { datum: `${year}-12-26`, name: '2. Weihnachtstag' },
+        ];
+      }
+
+      const defaults = [...feiertageFuerJahr(baseYear), ...feiertageFuerJahr(baseYear + 1)];
 
       const existing = DataStore.getFeiertage().map(f => f.datum);
       let added = 0;
@@ -5764,7 +5753,7 @@
         }
       },
 
-      projektBericht(ueberProjektId, projektId, von, bis) {
+      async projektBericht(ueberProjektId, projektId, von, bis) {
         const up = DataStore.getUeberProjekt(ueberProjektId);
         const p = up ? (up.projekte || []).find(pr => pr.id === projektId) : null;
         if (!up || !p) return;
@@ -6158,14 +6147,14 @@
           erstelltAm: new Date().toISOString(),
           zeitraumVon: von,
           zeitraumBis: bis,
-          datenHash: DataStore.hashData(JSON.stringify({ p, zuweisungen: DataStore.getZuweisungenForProjekt(projektId) })),
+          datenHash: await DataStore.hashData(JSON.stringify({ p, zuweisungen: DataStore.getZuweisungenForProjekt(projektId) })),
         });
 
         doc.save(`${dokumentNr}_Projekt_${p.name.replace(/\s+/g, '_')}.pdf`);
       },
 
       // ─── Projektplan Export (Plan Items + Descriptions only) ───
-      projektplanBericht(ueberProjektId, projektId) {
+      async projektplanBericht(ueberProjektId, projektId) {
         const up = DataStore.getUeberProjekt(ueberProjektId);
         const p = up ? (up.projekte || []).find(pr => pr.id === projektId) : null;
         if (!up || !p) return;
@@ -6381,13 +6370,13 @@
           erstelltAm: new Date().toISOString(),
           zeitraumVon: p.startDatum,
           zeitraumBis: p.endDatum,
-          datenHash: DataStore.hashData(JSON.stringify({ p })),
+          datenHash: await DataStore.hashData(JSON.stringify({ p })),
         });
 
         doc.save(`${dokumentNr}_Projektplan_${p.name.replace(/\s+/g, '_')}.pdf`);
       },
 
-      mitarbeiterBericht(mitarbeiterId, von, bis) {
+      async mitarbeiterBericht(mitarbeiterId, von, bis) {
         const ma = DataStore.getMitarbeiterById(mitarbeiterId);
         if (!ma) return;
 
@@ -6774,13 +6763,13 @@
           erstelltAm: new Date().toISOString(),
           zeitraumVon: von,
           zeitraumBis: bis,
-          datenHash: DataStore.hashData(JSON.stringify({ ma, zuweisungen: DataStore.getZuweisungenForMitarbeiter(mitarbeiterId) })),
+          datenHash: await DataStore.hashData(JSON.stringify({ ma, zuweisungen: DataStore.getZuweisungenForMitarbeiter(mitarbeiterId) })),
         });
 
         doc.save(`${dokumentNr}_Mitarbeiter_${ma.name.replace(/\s+/g, '_')}.pdf`);
       },
 
-      ueberProjektBericht(ueberProjektId, von, bis) {
+      async ueberProjektBericht(ueberProjektId, von, bis) {
         const up = DataStore.getUeberProjekt(ueberProjektId);
         if (!up) return;
 
@@ -6871,13 +6860,13 @@
           erstelltAm: new Date().toISOString(),
           zeitraumVon: von,
           zeitraumBis: bis,
-          datenHash: DataStore.hashData(JSON.stringify(up)),
+          datenHash: await DataStore.hashData(JSON.stringify(up)),
         });
 
         doc.save(`${dokumentNr}_Kunde_${up.name.replace(/\s+/g, '_')}.pdf`);
       },
 
-      aenderungsprotokollBericht() {
+      async aenderungsprotokollBericht() {
         const log = DataStore.getAenderungsLog();
         if (log.length === 0) return;
 
@@ -6929,7 +6918,7 @@
           erstelltAm: new Date().toISOString(),
           zeitraumVon: sorted.length > 0 ? sorted[sorted.length - 1].zeitpunkt.slice(0, 10) : '',
           zeitraumBis: sorted.length > 0 ? sorted[0].zeitpunkt.slice(0, 10) : '',
-          datenHash: DataStore.hashData(JSON.stringify(log)),
+          datenHash: await DataStore.hashData(JSON.stringify(log)),
         });
 
         doc.save(`${dokumentNr}_Aenderungsprotokoll.pdf`);
@@ -6951,14 +6940,14 @@
         ));
         body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end' } },
           el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
-          el('button', { className: 'btn-primary', onClick: () => {
+          el('button', { className: 'btn-primary', onClick: async () => {
             if (!vonInput.value || !bisInput.value) return;
             if (typ === 'projekt') {
-              PDFExport.projektBericht(defaults.ueberProjektId, referenzId, vonInput.value, bisInput.value);
+              await PDFExport.projektBericht(defaults.ueberProjektId, referenzId, vonInput.value, bisInput.value);
             } else if (typ === 'mitarbeiter') {
-              PDFExport.mitarbeiterBericht(referenzId, vonInput.value, bisInput.value);
+              await PDFExport.mitarbeiterBericht(referenzId, vonInput.value, bisInput.value);
             } else if (typ === 'ueberprojekt') {
-              PDFExport.ueberProjektBericht(referenzId, vonInput.value, bisInput.value);
+              await PDFExport.ueberProjektBericht(referenzId, vonInput.value, bisInput.value);
             }
             close();
             // Refresh if on export-historie page
@@ -7074,7 +7063,7 @@
 
     // ─── Warn before leaving with open modal (unsaved form data) ───
     window.addEventListener('beforeunload', (e) => {
-      if (document.querySelector('.modal-overlay')) {
+      if (document.querySelector('.modal-backdrop')) {
         e.preventDefault();
         e.returnValue = '';
       }
