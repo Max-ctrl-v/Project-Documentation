@@ -13,9 +13,7 @@
       ]
     }
   ],
-  "routes": [
-    { "src": "/api-client.js", "dest": "/api-client.js" },
-    { "src": "/seed-data.json", "dest": "/seed-data.json" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/((?!api-client\\.js|seed-data\\.json).*)", "destination": "/index.html" }
   ]
 }
