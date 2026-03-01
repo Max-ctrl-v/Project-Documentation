@@ -240,8 +240,8 @@
                 status: p.status || 'aktiv',
                 startDatum: (p.startDatum || '').slice(0, 10),
                 endDatum: (p.endDatum || '').slice(0, 10),
-                budget: p.budget || undefined,
-                sollKosten: p.sollKosten || p.budget || undefined,
+                budget: p.budget ? Number(p.budget) : undefined,
+                sollKosten: (p.sollKosten || p.budget) ? Number(p.sollKosten || p.budget) : undefined,
                 arbeitspakete,
               };
             });
@@ -262,9 +262,9 @@
             }));
             return {
               id: ma.id, name: ma.name, position: ma.position || '',
-              wochenStunden: ma.wochenStunden || 40, jahresUrlaub: ma.jahresUrlaub || 30,
+              wochenStunden: Number(ma.wochenStunden) || 40, jahresUrlaub: Number(ma.jahresUrlaub) || 30,
               feiertagePflicht: ma.feiertagePflicht !== false,
-              jahresgehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
+              jahresgehalt: Number(ma.jahresgehalt) || 0, lohnnebenkosten: Number(ma.lohnnebenkosten) || 0,
               blockierungen,
             };
           });
@@ -277,7 +277,7 @@
             return {
               id: zw.id, mitarbeiterId: zw.mitarbeiterId,
               projektId: zw.projektId, ueberProjektId: zw.ueberProjektId,
-              prozentAnteil: zw.prozentAnteil,
+              prozentAnteil: Number(zw.prozentAnteil) || 0,
               von: (zw.von || '').slice(0, 10),
               bis: (zw.bis || '').slice(0, 10),
               arbeitspaketVerteilung: apVert,
@@ -724,7 +724,7 @@
       getDailyRate(mitarbeiterId) {
         const ma = DataStore.getMitarbeiterById(mitarbeiterId);
         if (!ma) return 0;
-        const totalCost = (ma.jahresgehalt || 0) + (ma.lohnnebenkosten || 0);
+        const totalCost = (Number(ma.jahresgehalt) || 0) + (Number(ma.lohnnebenkosten) || 0);
         if (totalCost === 0) return 0;
         // Dynamische Berechnung: Werktage = (wochenStunden/8) * 52 - jahresUrlaub - Feiertage
         const wochenTage = Number(ma.wochenStunden || 40) / 8;
@@ -5698,21 +5698,6 @@
           }
         }
 
-        // Berechnungsgrundlage
-        if (y > 250) { doc.addPage(); y = 36; }
-        y += 4;
-        doc.setFillColor(240, 253, 253);
-        doc.roundedRect(14, y - 4, pageWidth - 28, 22, 2, 2, 'F');
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
-        doc.text('Berechnungsgrundlage', 18, y + 2);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(71, 85, 105);
-        doc.text('Verfügbare Tage = Werktage (Mo–Fr) − Blockierungen (Urlaub + Krank + Feiertage)', 18, y + 8);
-        doc.text('Projekt-Tage = Verfügbare Tage × (Projekt-% / 100)', 18, y + 13);
-
         this._finalize(doc, addHeader, addFooter);
 
         DataStore.addExportEntry({
@@ -5795,20 +5780,6 @@
             y += 8;
           }
         }
-
-        // Berechnungsgrundlage
-        if (y > 255) { doc.addPage(); y = 36; }
-        y += 4;
-        doc.setFillColor(240, 253, 253);
-        doc.roundedRect(14, y - 4, pageWidth - 28, 16, 2, 2, 'F');
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
-        doc.text('Berechnungsgrundlage', 18, y + 2);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7.5);
-        doc.setTextColor(71, 85, 105);
-        doc.text('Projekt-Tage = (Werktage − Blockierungen) × Projekt-% / 100', 18, y + 8);
 
         this._finalize(doc, addHeader, addFooter);
 
