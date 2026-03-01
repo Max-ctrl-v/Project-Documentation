@@ -85,14 +85,23 @@
       _showLogin() {
         document.getElementById('login-overlay').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
+        // Auto-focus email field after animation
+        setTimeout(() => {
+          const emailInput = document.getElementById('login-email');
+          if (emailInput) emailInput.focus();
+        }, 100);
       },
 
       _updateSidebarUser() {
-        const el = document.getElementById('sidebar-user-info');
+        const row = document.getElementById('sidebar-user-row');
+        const infoEl = document.getElementById('sidebar-user-info');
+        const avatarEl = document.getElementById('sidebar-user-avatar');
         const user = this.getCurrentUser();
-        if (el && user) {
-          el.textContent = `${user.name} (${user.role === 'admin' ? 'Admin' : 'Benutzer'})`;
-          el.style.display = 'block';
+        if (row && infoEl && user) {
+          const initials = (user.name || user.email || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+          avatarEl.textContent = initials;
+          infoEl.textContent = `${user.name} (${user.role === 'admin' ? 'Admin' : 'Benutzer'})`;
+          row.style.display = 'flex';
         }
         // Admin-only sidebar links
         const spLink = document.getElementById('sidebar-sitzungsprotokoll');
@@ -783,6 +792,20 @@
       return e;
     }
 
+    // SVG trash icon helper (replaces emoji)
+    function trashIcon() {
+      const span = el('span', { style: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } });
+      span.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>';
+      return span;
+    }
+
+    // Breadcrumb chevron separator
+    function breadcrumbChevron() {
+      const span = el('span', { className: 'breadcrumb-sep' });
+      span.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+      return span;
+    }
+
     function formatDate(d) {
       if (!d) return '–';
       const parts = d.split('-');
@@ -845,11 +868,11 @@
       const backdrop = el('div', { className: 'modal-backdrop' });
       const content = el('div', { className: 'modal-content shadow-floating' });
 
+      const closeBtn = el('button', { className: 'modal-close-btn', onClick: () => closeModal(backdrop), 'aria-label': 'Schließen' });
+      closeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
       const header = el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' } },
-        el('h2', { style: { fontSize: '20px', margin: '0' } }, title),
-        el('button', { className: 'btn-icon', onClick: () => closeModal(backdrop), 'aria-label': 'Schließen' },
-          el('span', { style: { fontSize: '20px', lineHeight: '1' } }, '\u00D7')
-        )
+        el('h2', { style: { fontSize: '20px', margin: '0', fontFamily: '"DM Serif Display", serif', color: '#063838' } }, title),
+        closeBtn
       );
       content.appendChild(header);
 
@@ -906,6 +929,12 @@
         const hash = window.location.hash || '#/dashboard';
         const main = document.getElementById('main-content');
         main.innerHTML = '';
+
+        // Close mobile sidebar on navigation
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('visible');
 
         // Update sidebar active state
         document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -967,17 +996,24 @@
       // Stats
       const totalProjekte = ups.reduce((n, u) => n + (u.projekte || []).length, 0);
       const stats = [
-        { label: 'Firmen', value: ups.length, color: '#0D7377' },
-        { label: 'Projekte', value: totalProjekte, color: '#0FA8A3' },
-        { label: 'Mitarbeiter', value: mas.length, color: '#F59E0B' },
-        { label: 'Zuweisungen', value: zws.length, color: '#2BC8C4' },
+        { label: 'Firmen', value: ups.length, color: '#0D7377', bg: '#F0FDFD', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' },
+        { label: 'Projekte', value: totalProjekte, color: '#0FA8A3', bg: '#F0FDFD', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0FA8A3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>' },
+        { label: 'Mitarbeiter', value: mas.length, color: '#F59E0B', bg: '#FFFBEB', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' },
+        { label: 'Zuweisungen', value: zws.length, color: '#2BC8C4', bg: '#F0FDFD', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2BC8C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>' },
       ];
       const statsRow = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' } });
       for (const s of stats) {
+        const iconDiv = el('div', { className: 'stat-card-icon', style: { background: s.bg } });
+        iconDiv.innerHTML = s.icon;
         statsRow.appendChild(
           el('div', { className: 'card', style: { borderTop: `3px solid ${s.color}` } },
-            el('p', { style: { fontSize: '12px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' } }, s.label),
-            el('p', { style: { fontSize: '28px', fontWeight: '700', color: '#063838', margin: '0', fontFamily: '"DM Serif Display", serif' } }, String(s.value))
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+              iconDiv,
+              el('div', null,
+                el('p', { style: { fontSize: '12px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 2px' } }, s.label),
+                el('p', { style: { fontSize: '28px', fontWeight: '700', color: '#063838', margin: '0', fontFamily: '"DM Serif Display", serif' } }, String(s.value))
+              )
+            )
           )
         );
       }
@@ -1011,7 +1047,7 @@
                 className: 'btn-icon',
                 onClick: (e) => { e.stopPropagation(); confirmDialog(`"${up.name}" und alle zugehörigen Projekte wirklich löschen?`, () => { DataStore.deleteUeberProjekt(up.id); Router.resolve(); }); },
                 'aria-label': 'Löschen'
-              }, el('span', { style: { fontSize: '16px' } }, '\uD83D\uDDD1'))
+              }, trashIcon())
             ),
             el('div', { style: { display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F1F5F9' } },
               el('span', { style: { fontSize: '13px', color: '#64748B' } }, `${pCount} Projekt${pCount !== 1 ? 'e' : ''}`),
@@ -1025,12 +1061,28 @@
     }
 
     // --- Empty State ---
+    const EMPTY_STATE_ICONS = {
+      'Firmen': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      'Projekte': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>',
+      'Mitarbeiter': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+      'Exporte': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+      'Arbeitspakete': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0D7377" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>',
+    };
+
     function renderEmptyState(title, desc, btnText, btnAction) {
+      // Pick icon based on title keyword
+      let iconSvg = EMPTY_STATE_ICONS['Firmen']; // default
+      for (const [key, svg] of Object.entries(EMPTY_STATE_ICONS)) {
+        if (title.toLowerCase().includes(key.toLowerCase())) { iconSvg = svg; break; }
+      }
+      const iconWrap = el('div', { className: 'empty-state-icon', style: { background: '#F0FDFD' } });
+      iconWrap.innerHTML = iconSvg;
+
       return el('div', {
         className: 'card',
         style: { textAlign: 'center', padding: '64px 32px', border: '2px dashed #E2E8F0', background: 'transparent', boxShadow: 'none' }
       },
-        el('div', { style: { fontSize: '48px', marginBottom: '16px', opacity: '0.3' } }, '\uD83D\uDCC1'),
+        iconWrap,
         el('h3', { style: { fontSize: '18px', color: '#334155', margin: '0 0 8px' } }, title),
         el('p', { style: { fontSize: '14px', color: '#64748B', margin: '0 0 24px', maxWidth: '400px', marginLeft: 'auto', marginRight: 'auto' } }, desc),
         el('button', { className: 'btn-primary', onClick: btnAction }, btnText)
@@ -1299,9 +1351,9 @@
         }
 
         // Breadcrumb
-        container.appendChild(el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B' } },
+        container.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B' } },
           el('a', { href: '#/mitarbeiter', style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, 'Mitarbeiter'),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('span', { style: { color: '#334155' } }, `${freshMa.name} – Kalender`)
         ));
 
@@ -1537,13 +1589,13 @@
         container.innerHTML = '';
 
         // Breadcrumb
-        container.appendChild(el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B' } },
+        container.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B' } },
           el('a', { href: '#/dashboard', style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, 'Dashboard'),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('a', { href: `#/ueberprojekt/${ueberProjektId}`, style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, up.name),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('a', { href: `#/projekt/${ueberProjektId}/${projektId}`, style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, p.name),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('span', { style: { color: '#334155' } }, 'Kalender')
         ));
 
@@ -1745,13 +1797,13 @@
         container.innerHTML = '';
 
         // Breadcrumb
-        container.appendChild(el('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B', flexWrap: 'wrap' } },
+        container.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', marginBottom: '16px', fontSize: '13px', color: '#64748B', flexWrap: 'wrap' } },
           el('a', { href: '#/dashboard', style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, 'Dashboard'),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('a', { href: `#/ueberprojekt/${ueberProjektId}`, style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, up.name),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('a', { href: `#/projekt/${ueberProjektId}/${projektId}`, style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, p.name),
-          el('span', null, '/'),
+          breadcrumbChevron(),
           el('span', { style: { color: '#334155' } }, `${ap.name} – Kalender`)
         ));
 
@@ -2111,9 +2163,9 @@
       }
 
       // Breadcrumb
-      container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B' } },
+      container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B', display: 'flex', alignItems: 'center' } },
         el('a', { href: '#/dashboard', style: { color: '#0D7377', textDecoration: 'none', cursor: 'pointer' } }, 'Dashboard'),
-        el('span', { style: { margin: '0 8px' } }, '/'),
+        breadcrumbChevron(),
         el('span', null, up.name)
       ));
 
@@ -2170,7 +2222,7 @@
                 className: 'btn-icon',
                 onClick: (e) => { e.stopPropagation(); confirmDialog(`Projekt "${p.name}" wirklich löschen?`, () => { DataStore.deleteProjekt(up.id, p.id); Router.resolve(); }); },
                 'aria-label': 'Löschen'
-              }, el('span', { style: { fontSize: '16px' } }, '\uD83D\uDDD1'))
+              }, trashIcon())
             ),
             el('div', { style: { marginTop: '12px', fontSize: '13px', color: '#64748B' } },
               el('span', null, `${formatDate(p.startDatum)} – ${formatDate(p.endDatum)}`),
@@ -2498,7 +2550,7 @@
                 `"${ap.name}" löschen?${hc ? ' Alle Unter-APs werden ebenfalls gelöscht.' : ''}`,
                 () => { removeApFromTree(projekt.arbeitspakete, ap.id); DataStore.saveProjekt(upId, projekt); Router.resolve(); }
               );
-            }, title: 'Löschen' }, '\uD83D\uDDD1')
+            }, title: 'Löschen' }, trashIcon())
         );
         row.appendChild(actions);
 
@@ -3407,11 +3459,11 @@
       if (!p) { container.appendChild(el('p', { style: { color: '#DC2626' } }, 'Projekt nicht gefunden.')); return; }
 
       // Breadcrumb
-      container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B' } },
+      container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B', display: 'flex', alignItems: 'center' } },
         el('a', { href: '#/dashboard', style: { color: '#0D7377', textDecoration: 'none' } }, 'Dashboard'),
-        el('span', { style: { margin: '0 8px' } }, '/'),
+        breadcrumbChevron(),
         el('a', { href: `#/ueberprojekt/${up.id}`, style: { color: '#0D7377', textDecoration: 'none' } }, up.name),
-        el('span', { style: { margin: '0 8px' } }, '/'),
+        breadcrumbChevron(),
         el('span', null, p.name)
       ));
 
@@ -3522,7 +3574,7 @@
               el('td', { style: { fontWeight: '600', color: '#F59E0B' } }, formatEuro(calc.projektKosten)),
               el('td', { style: { display: 'flex', gap: '4px' } },
                 el('button', { className: 'btn-icon', onClick: () => openZuweisungModal(ueberProjektId, projektId, zw), 'aria-label': 'Bearbeiten' }, '\u270F\uFE0F'),
-                el('button', { className: 'btn-icon', onClick: () => confirmDialog('Zuweisung löschen?', () => { DataStore.deleteZuweisung(zw.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1')
+                el('button', { className: 'btn-icon', onClick: () => confirmDialog('Zuweisung löschen?', () => { DataStore.deleteZuweisung(zw.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
               )
             ));
           }
@@ -3611,7 +3663,7 @@
               ),
               el('div', { style: { display: 'flex', gap: '4px' } },
                 el('button', { className: 'btn-icon', style: { fontSize: '14px' }, onClick: () => downloadBackendDocument(doc), 'aria-label': 'Herunterladen' }, '\u2B07\uFE0F'),
-                isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => confirmDialog(`"${doc.name}" wirklich löschen?`, async () => { await DataStoreAPI.deleteDokument(doc.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1') : null
+                isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => confirmDialog(`"${doc.name}" wirklich löschen?`, async () => { await DataStoreAPI.deleteDokument(doc.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon()) : null
               )
             ));
           }
@@ -4007,7 +4059,7 @@
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => Router.navigate(`#/mitarbeiter-kalender/${ma.id}`) }, 'Kalender'),
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Urlaub & Krank'),
               el('button', { className: 'btn-icon', onClick: () => openMitarbeiterModal(ma), 'aria-label': 'Bearbeiten' }, '\u270E'),
-              el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${ma.name}" und alle Zuweisungen löschen?`, () => { DataStore.deleteMitarbeiter(ma.id); Router.resolve(); }), 'aria-label': 'Löschen' }, '\uD83D\uDDD1')
+              el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${ma.name}" und alle Zuweisungen löschen?`, () => { DataStore.deleteMitarbeiter(ma.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
             )
           ));
         }
@@ -4198,7 +4250,7 @@
           tbody.appendChild(el('tr', null,
             el('td', null, formatDate(ft.datum)),
             el('td', { style: { fontWeight: '500' } }, ft.name),
-            el('td', null, el('button', { className: 'btn-icon', onClick: () => { confirmDialog(`Feiertag "${ft.name}" am ${formatDate(ft.datum)} löschen?`, () => { DataStore.deleteFeiertag(ft.datum); Router.resolve(); }); }, 'aria-label': 'Löschen' }, '\uD83D\uDDD1'))
+            el('td', null, el('button', { className: 'btn-icon', onClick: () => { confirmDialog(`Feiertag "${ft.name}" am ${formatDate(ft.datum)} löschen?`, () => { DataStore.deleteFeiertag(ft.datum); Router.resolve(); }); }, 'aria-label': 'Löschen' }, trashIcon()))
           ));
         }
         table.appendChild(tbody);
@@ -4506,10 +4558,19 @@
         const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
         const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-        // Header on every page
+        // Header on every page — gradient effect
         const addHeader = () => {
-          doc.setFillColor(13, 115, 119);
-          doc.rect(0, 0, pageWidth, 28, 'F');
+          // Gradient from dark teal to lighter teal
+          const gradSteps = 20;
+          const barH = 28;
+          for (let i = 0; i < gradSteps; i++) {
+            const t = i / gradSteps;
+            const r = Math.round(6 + t * (15 - 6));
+            const g = Math.round(56 + t * (168 - 56));
+            const b = Math.round(56 + t * (163 - 56));
+            doc.setFillColor(r, g, b);
+            doc.rect(0, (barH * i) / gradSteps, pageWidth, barH / gradSteps + 0.5, 'F');
+          }
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(16);
           doc.setTextColor(255, 255, 255);
@@ -4523,8 +4584,11 @@
           doc.setTextColor(0, 0, 0);
         };
 
-        // Footer on every page
+        // Footer on every page — with separator line
         const addFooter = (pageNum, totalPages) => {
+          doc.setDrawColor(226, 232, 240);
+          doc.setLineWidth(0.3);
+          doc.line(14, pageHeight - 14, pageWidth - 14, pageHeight - 14);
           doc.setFontSize(7);
           doc.setTextColor(100, 116, 139);
           doc.text(`GoBD-konform erstellt am ${dateStr} um ${timeStr} Uhr`, 14, pageHeight - 8);

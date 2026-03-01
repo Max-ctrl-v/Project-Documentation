@@ -188,7 +188,7 @@
     .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
     .sidebar-link:focus-visible { outline: 2px solid #2BC8C4; outline-offset: -2px; }
     .sidebar-link:active { transform: scale(0.98); }
-    .sidebar-link.active { background: rgba(13,115,119,0.35); color: white; border-right: 3px solid #2BC8C4; }
+    .sidebar-link.active { background: rgba(13,115,119,0.35); color: white; border-left: 3px solid #2BC8C4; padding-left: 21px; }
 
     /* Form inputs */
     .form-input {
@@ -1121,13 +1121,225 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* ====== Login Page Animation ====== */
+    @keyframes login-fade-up {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .login-card-animated {
+      animation: login-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* ====== Sidebar User Avatar ====== */
+    .sidebar-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0D7377, #2BC8C4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    /* ====== Stat Card Icons ====== */
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ====== Enhanced Empty State ====== */
+    .empty-state-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    /* ====== Modal Close Button ====== */
+    .modal-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94A3B8;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-close-btn:hover { background: #FEE2E2; color: #DC2626; transform: rotate(90deg); }
+    .modal-close-btn:active { transform: rotate(90deg) scale(0.9); }
+
+    /* ====== Responsive / Mobile ====== */
+    .mobile-hamburger {
+      display: none;
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 60;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: none;
+      background: #032525;
+      color: white;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 45;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        z-index: 50;
+        transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        width: 260px;
+      }
+      .sidebar.mobile-open {
+        left: 0;
+      }
+      .sidebar-overlay.visible {
+        display: block;
+      }
+      .mobile-hamburger {
+        display: flex;
+      }
+      #main-content {
+        margin-left: 0 !important;
+        padding: 20px 16px !important;
+        padding-top: 64px !important;
+      }
+      .cost-overview-body { grid-template-columns: 1fr; }
+      .cost-overview-left { border-right: none; border-bottom: 1px solid #E2E8F0; }
+    }
+    @media (max-width: 480px) {
+      .plan-tabs { flex-wrap: wrap; }
+      .plan-tab { padding: 10px 14px; font-size: 12px; }
+    }
+
+    /* ====== Tabs: Filled Pill Active State ====== */
+    .plan-tab.active {
+      color: white;
+      background: #0D7377;
+      border-bottom-color: transparent;
+      border-radius: 8px;
+      margin: 4px 0;
+    }
+    .plan-tab:hover:not(.active) {
+      background: #F0FDFD;
+      border-radius: 8px;
+    }
+
+    /* ====== Sticky Table Header Border ====== */
+    .data-table thead th {
+      box-shadow: 0 1px 0 0 #E2E8F0;
+    }
+    .ap-timeline-table thead th {
+      box-shadow: 0 1px 0 0 #E2E8F0;
+    }
+
+    /* ====== Calendar Legend: Rounded Square Swatches ====== */
+    .cal-legend-swatch {
+      border-radius: 4px;
+    }
+
+    /* ====== Loading Spinner: Brand Colors ====== */
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #E2E8F0;
+      border-top-color: #0D7377;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* ====== Breadcrumb Chevrons ====== */
+    .breadcrumb-sep {
+      color: #CBD5E1;
+      display: inline-flex;
+      align-items: center;
+      margin: 0 4px;
+    }
+
+    /* ====== Delete button SVG instead of emoji ====== */
+    .btn-icon-delete {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #94A3B8;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease, color 0.15s ease;
+    }
+    .btn-icon-delete:hover { background: #FEE2E2; color: #DC2626; transform: translateY(-1px); }
+    .btn-icon-delete:active { transform: scale(0.92); }
+
+    /* ====== Gantt Sub-AP Visual Hierarchy ====== */
+    .ap-gantt-row--sub td.ap-td-label {
+      padding-left: 36px !important;
+    }
+    .ap-gantt-row--sub .ap-label-name {
+      font-size: 12px;
+      color: #475569;
+    }
+    .ap-gantt-row--sub .ap-gantt-bar {
+      opacity: 0.8;
+      top: 11px;
+      bottom: 11px;
+    }
+
+    /* ====== Table Total Row ====== */
+    .data-table tfoot td {
+      padding: 12px 16px;
+      font-weight: 700;
+      color: #063838;
+      background: #F0FDFD;
+      border-top: 2px solid #0D7377;
+    }
+
+    /* ====== Prefers Reduced Motion ====== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body class="grain">
 
   <!-- Login Overlay -->
   <div id="login-overlay" style="position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, #063838 0%, #0A5C5F 50%, #0D7377 100%); display:flex; align-items:center; justify-content:center;">
-    <div style="background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 25px 60px rgba(0,0,0,0.3);">
+    <div class="login-card-animated" style="background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 25px 60px rgba(0,0,0,0.3);">
       <!-- Login Form -->
       <div id="login-form">
         <div style="text-align:center; margin-bottom:28px;">
@@ -1178,6 +1390,12 @@
   </div>
 
   <div id="app" style="min-height:100vh; display:none;">
+    <!-- Mobile Hamburger -->
+    <button class="mobile-hamburger" id="mobile-hamburger" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open'); document.getElementById('sidebar-overlay').classList.toggle('visible');">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="document.querySelector('.sidebar').classList.remove('mobile-open'); this.classList.remove('visible');"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar" style="display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:50;">
       <div style="padding:24px 24px 8px;">
@@ -1262,7 +1480,10 @@
           JSON importieren
         </button>
         <div style="border-top:1px solid rgba(255,255,255,0.1); margin-top:12px; padding-top:12px;">
-          <p id="sidebar-user-info" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0 0 8px; font-weight:500; display:none;"></p>
+          <div id="sidebar-user-row" style="display:none; align-items:center; gap:10px; margin-bottom:10px;">
+            <div id="sidebar-user-avatar" class="sidebar-user-avatar"></div>
+            <p id="sidebar-user-info" style="font-size:12px; color:rgba(255,255,255,0.7); margin:0; font-weight:500;"></p>
+          </div>
           <button onclick="AuthSystem.logout()" class="sidebar-link" style="width:100%; border:none; background:none; font-size:13px; padding:8px 0; color:#F87171;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Abmelden
