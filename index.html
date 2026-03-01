@@ -5687,7 +5687,7 @@
 
       try {
         const data = await DataStoreAPI.getSessionLogs(500);
-        const logs = data.logs || data || [];
+        const logs = data.data || data.logs || (Array.isArray(data) ? data : []);
 
         if (logs.length === 0) {
           container.appendChild(renderEmptyState(
