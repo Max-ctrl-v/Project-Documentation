@@ -406,6 +406,12 @@
         }
       },
 
+      // Fire-and-forget backend sync — keeps DB in sync with localStorage edits
+      _pushToBackend(fn) {
+        if (!window.DataStoreAPI || !window.TokenManager?.getToken()) return;
+        fn().catch(e => console.warn('Backend-Sync fehlgeschlagen:', e.message));
+      },
+
       getAll() { return this._read(); },
 
       // Über-Projekte
@@ -418,6 +424,7 @@
         if (idx >= 0) data.ueberProjekte[idx] = up;
         else data.ueberProjekte.push(up);
         this.logChange(isNew ? 'erstellt' : 'geändert', 'Firma', up.id, up.name, undefined, data);
+        this._pushToBackend(() => DataStoreAPI.saveUeberProjekt(isNew ? { ...up, _isNew: true } : up));
       },
       deleteUeberProjekt(id) {
         const data = this._read();
@@ -430,6 +437,7 @@
         } else {
           this._write(data);
         }
+        this._pushToBackend(() => DataStoreAPI.deleteUeberProjekt(id));
       },
 
       // Projekte (nested in ÜP)
@@ -459,6 +467,7 @@
         const uidx = data.ueberProjekte.findIndex(u => u.id === up.id);
         if (uidx >= 0) data.ueberProjekte[uidx] = up;
         this.logChange(isNew ? 'erstellt' : 'geändert', 'Projekt', projekt.id, projekt.name, `in ${up.name}`, data);
+        this._pushToBackend(() => DataStoreAPI.saveProjekt(ueberProjektId, isNew ? { ...projekt, _isNew: true } : projekt));
       },
       deleteProjekt(ueberProjektId, projektId) {
         const data = this._read();
@@ -471,6 +480,7 @@
           data.zuweisungen = data.zuweisungen.filter(z => z.projektId !== projektId);
         }
         this.logChange('gelöscht', 'Projekt', projektId, pName, up ? `aus ${up.name}` : '', data);
+        this._pushToBackend(() => DataStoreAPI.deleteProjekt(ueberProjektId, projektId));
       },
 
       // Mitarbeiter
@@ -483,6 +493,7 @@
         if (idx >= 0) data.mitarbeiter[idx] = ma;
         else data.mitarbeiter.push(ma);
         this.logChange(isNew ? 'erstellt' : 'geändert', 'Mitarbeiter', ma.id, ma.name, undefined, data);
+        this._pushToBackend(() => DataStoreAPI.saveMitarbeiter(isNew ? { ...ma, _isNew: true } : ma));
       },
       deleteMitarbeiter(id) {
         const data = this._read();
@@ -494,6 +505,7 @@
         } else {
           this._write(data);
         }
+        this._pushToBackend(() => DataStoreAPI.deleteMitarbeiter(id));
       },
 
       // Zuweisungen
@@ -509,6 +521,7 @@
         else data.zuweisungen.push(zw);
         const ma = (data.mitarbeiter || []).find(m => m.id === zw.mitarbeiterId);
         this.logChange(isNew ? 'erstellt' : 'geändert', 'Zuweisung', zw.id, ma ? ma.name : 'Unbekannt', `${zw.prozentAnteil}%, ${zw.von} – ${zw.bis}`, data);
+        this._pushToBackend(() => DataStoreAPI.saveZuweisung(zw.projektId, isNew ? { ...zw, _isNew: true } : zw));
       },
       deleteZuweisung(id) {
         const data = this._read();
@@ -520,6 +533,7 @@
         } else {
           this._write(data);
         }
+        this._pushToBackend(() => DataStoreAPI.deleteZuweisung(id));
       },
 
       // Feiertage
@@ -533,11 +547,14 @@
         const data = this._read();
         data.feiertage.push(ft);
         this._write(data);
+        this._pushToBackend(() => DataStoreAPI.addFeiertag(ft));
       },
       deleteFeiertag(datum) {
         const data = this._read();
+        const ft = data.feiertage.find(f => f.datum === datum);
         data.feiertage = data.feiertage.filter(f => f.datum !== datum);
         this._write(data);
+        if (ft && ft.id) this._pushToBackend(() => DataStoreAPI.deleteFeiertag(ft.id));
       },
 
       // Externe Entwicklungen (nested in Projekt)
@@ -4386,18 +4403,57 @@
           () => Router.navigate('#/dashboard')
         ));
       } else {
-        // Filter controls
-        const filterSelect = el('select', { className: 'form-input', style: { width: 'auto', marginBottom: '16px' } });
-        filterSelect.appendChild(el('option', { value: '' }, 'Alle Entitäten'));
-        for (const t of ['Firma', 'Projekt', 'Mitarbeiter', 'Zuweisung']) {
-          filterSelect.appendChild(el('option', { value: t }, t));
-        }
+        // Collect unique filter values from log
+        const entitaeten = [...new Set(log.map(e => e.entitaet))].sort();
+        const aktionen = [...new Set(log.map(e => e.aktion))].sort();
+        const namen = [...new Set(log.map(e => e.name).filter(Boolean))].sort();
 
+        // Filter controls row
+        const filterRow = el('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px', alignItems: 'center' } });
+
+        const entitaetSelect = el('select', { className: 'form-input', style: { width: 'auto', minWidth: '150px' } });
+        entitaetSelect.appendChild(el('option', { value: '' }, 'Alle Entitäten'));
+        for (const t of entitaeten) entitaetSelect.appendChild(el('option', { value: t }, t));
+
+        const aktionSelect = el('select', { className: 'form-input', style: { width: 'auto', minWidth: '140px' } });
+        aktionSelect.appendChild(el('option', { value: '' }, 'Alle Aktionen'));
+        for (const a of aktionen) aktionSelect.appendChild(el('option', { value: a }, a.charAt(0).toUpperCase() + a.slice(1)));
+
+        const nameSelect = el('select', { className: 'form-input', style: { width: 'auto', minWidth: '180px' } });
+        nameSelect.appendChild(el('option', { value: '' }, 'Alle Namen'));
+        for (const n of namen) nameSelect.appendChild(el('option', { value: n }, n));
+
+        const searchInput = el('input', { className: 'form-input', type: 'text', placeholder: 'Freitext-Suche...', style: { width: 'auto', minWidth: '180px' } });
+
+        const resetBtn = el('button', { className: 'btn-secondary', style: { height: '40px', whiteSpace: 'nowrap' }, onClick: () => {
+          entitaetSelect.value = ''; aktionSelect.value = ''; nameSelect.value = ''; searchInput.value = '';
+          applyFilters();
+        }}, 'Zurücksetzen');
+
+        filterRow.append(entitaetSelect, aktionSelect, nameSelect, searchInput, resetBtn);
+
+        const countEl = el('p', { style: { fontSize: '13px', color: '#64748B', margin: '0 0 12px' } });
         const tableWrap = el('div', { className: 'card', style: { padding: '0', overflow: 'auto' } });
 
-        function renderTable(filter) {
-          const filtered = filter ? log.filter(e => e.entitaet === filter) : log;
+        function applyFilters() {
+          const eFilter = entitaetSelect.value;
+          const aFilter = aktionSelect.value;
+          const nFilter = nameSelect.value;
+          const sFilter = searchInput.value.trim().toLowerCase();
+
+          let filtered = log;
+          if (eFilter) filtered = filtered.filter(e => e.entitaet === eFilter);
+          if (aFilter) filtered = filtered.filter(e => e.aktion === aFilter);
+          if (nFilter) filtered = filtered.filter(e => e.name === nFilter);
+          if (sFilter) filtered = filtered.filter(e =>
+            (e.name || '').toLowerCase().includes(sFilter) ||
+            (e.details || '').toLowerCase().includes(sFilter) ||
+            (e.entitaet || '').toLowerCase().includes(sFilter)
+          );
+
           const sorted = filtered.sort((a, b) => b.zeitpunkt.localeCompare(a.zeitpunkt));
+          countEl.textContent = `${sorted.length} von ${log.length} Einträgen`;
+
           const table = el('table', { className: 'data-table' });
           table.appendChild(el('thead', null, el('tr', null,
             el('th', null, 'Zeitpunkt'),
@@ -4424,10 +4480,15 @@
           tableWrap.appendChild(table);
         }
 
-        filterSelect.addEventListener('change', () => renderTable(filterSelect.value));
-        container.appendChild(filterSelect);
+        entitaetSelect.addEventListener('change', applyFilters);
+        aktionSelect.addEventListener('change', applyFilters);
+        nameSelect.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
+
+        container.appendChild(filterRow);
+        container.appendChild(countEl);
         container.appendChild(tableWrap);
-        renderTable('');
+        applyFilters();
       }
     }
 
@@ -4622,22 +4683,16 @@
           'Browser-Speicher (localStorage) persistiert. Änderungen werden im Änderungs-',
           'protokoll revisionssicher protokolliert.',
           '',
-          '2. Berechnungsmethodik',
-          'Tagessatz = (Jahresgehalt + Lohnnebenkosten) / 260 Werktage pro Jahr.',
-          'Projekt-Tage = Verfügbare Werktage × Zuweisungsprozent.',
-          'Blockierte Tage (Urlaub, Krankheit, Feiertage) werden pro Mitarbeiter',
-          'individuell abgezogen und beeinflussen keine anderen Mitarbeiter.',
-          '',
-          '3. Dokumentennummerierung',
+          '2. Dokumentennummerierung',
           'Jedes exportierte Dokument erhält eine eindeutige, fortlaufende Nummer',
           'im Format CLX-JJJJ-NNNN. Die Nummernvergabe ist sequentiell und lückenlos.',
           '',
-          '4. Datenintegrität',
+          '3. Datenintegrität',
           'Bei jedem Export wird ein Prüfwert (Hash) der zugrundeliegenden Daten',
           'gespeichert. Nachträgliche Änderungen an exportierten Datensätzen werden',
           'im Änderungsprotokoll vermerkt und dem Benutzer beim Bearbeiten angezeigt.',
           '',
-          '5. Aufbewahrung',
+          '4. Aufbewahrung',
           'Die Export-Historie dokumentiert alle erstellten Berichte mit Zeitstempel,',
           'Dokumentennummer, Berichtstyp und Daten-Hashwert. Das Änderungsprotokoll',
           'erfasst alle Erstellungen, Bearbeitungen und Löschungen mit Zeitstempel.',
