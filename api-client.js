@@ -126,6 +126,34 @@ const AuthAPI = {
     });
   },
 
+  async forgotPassword(email) {
+    const url = `${API_BASE}/auth/forgot-password`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+
+  async resetPassword(token, newPassword) {
+    const url = `${API_BASE}/auth/reset-password`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+
   isLoggedIn() {
     return TokenManager.hasTokens();
   },
@@ -358,6 +386,52 @@ const DataStoreAPI = {
       method: 'POST',
       body: JSON.stringify(localStorageData),
     });
+  },
+
+  // ─── Dokumente (PDF-Uploads) ─────────────────────────────
+  async uploadDokument(projektId, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `${API_BASE}/projekte/${projektId}/dokumente`;
+    const headers = {};
+    if (TokenManager.getAccessToken()) {
+      headers['Authorization'] = `Bearer ${TokenManager.getAccessToken()}`;
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+
+  async getDokumente(projektId) {
+    return apiFetch(`/projekte/${projektId}/dokumente`);
+  },
+
+  async downloadDokument(id) {
+    const url = `${API_BASE}/dokumente/${id}/download`;
+    const headers = {};
+    if (TokenManager.getAccessToken()) {
+      headers['Authorization'] = `Bearer ${TokenManager.getAccessToken()}`;
+    }
+    const res = await fetch(url, { headers, credentials: 'include' });
+    if (!res.ok) throw new Error(`Download fehlgeschlagen: HTTP ${res.status}`);
+    return res.blob();
+  },
+
+  async deleteDokument(id) {
+    return apiFetch(`/dokumente/${id}`, { method: 'DELETE' });
+  },
+
+  // ─── Sitzungsprotokoll ─────────────────────────────────────
+  async getSessionLogs(limit = 100, offset = 0) {
+    return apiFetch(`/session-logs?limit=${limit}&offset=${offset}`);
   },
 
   // ─── Benutzer (Admin) ─────────────────────────────────────
