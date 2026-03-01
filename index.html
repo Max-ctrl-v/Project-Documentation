@@ -668,18 +668,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
-    .plan-tab-check {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #0D7377;
-      color: white;
-      font-size: 11px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .plan-tab-icon svg { display: block; }
+    .plan-tab.active .plan-tab-icon { color: #0D7377; }
     .plan-tab-content { display: none; }
     .plan-tab-content.active { display: block; }
 
