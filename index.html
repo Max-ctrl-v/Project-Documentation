@@ -1344,11 +1344,11 @@
         <div id="login-error" style="display:none; background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:16px;"></div>
         <div style="margin-bottom:16px;">
           <label style="display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:6px;">E-Mail</label>
-          <input id="login-email" type="email" placeholder="E-Mail Adresse" style="width:100%; padding:10px 14px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:14px; color:#1E293B; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#0D7377'" onblur="this.style.borderColor='#E2E8F0'">
+          <input id="login-email" type="email" placeholder="E-Mail Adresse" autocomplete="email" style="width:100%; padding:10px 14px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:14px; color:#1E293B; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#0D7377'" onblur="this.style.borderColor='#E2E8F0'">
         </div>
         <div style="margin-bottom:24px;">
           <label style="display:block; font-size:13px; font-weight:600; color:#334155; margin-bottom:6px;">Passwort</label>
-          <input id="login-password" type="password" placeholder="Passwort" style="width:100%; padding:10px 14px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:14px; color:#1E293B; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#0D7377'" onblur="this.style.borderColor='#E2E8F0'">
+          <input id="login-password" type="password" placeholder="Passwort" autocomplete="current-password" maxlength="72" style="width:100%; padding:10px 14px; border:1.5px solid #E2E8F0; border-radius:8px; font-size:14px; color:#1E293B; outline:none; box-sizing:border-box; transition:border-color 0.2s;" onfocus="this.style.borderColor='#0D7377'" onblur="this.style.borderColor='#E2E8F0'">
         </div>
         <button id="login-btn" onclick="AuthSystem.handleLogin()" style="width:100%; padding:12px; background:linear-gradient(135deg,#0D7377,#0FA8A3); color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Anmelden</button>
         <div style="text-align:center; margin-top:16px;">

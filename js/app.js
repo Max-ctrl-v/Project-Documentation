@@ -296,6 +296,8 @@
               id: l.id, zeitpunkt: l.zeitpunkt, aktion: l.aktion,
               entitaet: l.entitaet, entitaetId: l.entitaetId,
               name: l.name || '', details: l.details || '',
+              vorherJson: l.vorherJson || null,
+              nachherJson: l.nachherJson || null,
             })),
           };
 
@@ -4456,6 +4458,7 @@
 
           const table = el('table', { className: 'data-table' });
           table.appendChild(el('thead', null, el('tr', null,
+            el('th', null, ''),
             el('th', null, 'Zeitpunkt'),
             el('th', null, 'Aktion'),
             el('th', null, 'Entität'),
@@ -4467,13 +4470,51 @@
             const actionColor = entry.aktion === 'erstellt' ? '#0D7377' : entry.aktion === 'gelöscht' ? '#DC2626' : '#F59E0B';
             const dt = new Date(entry.zeitpunkt);
             const dateStr = `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-            tbody.appendChild(el('tr', null,
+            const hasData = entry.vorherJson || entry.nachherJson;
+            const toggleBtn = hasData ? el('button', {
+              style: { background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontSize: '14px', color: '#64748B', transition: 'transform 0.2s' },
+              title: 'Details ein-/ausklappen',
+            }, '▶') : el('span', { style: { display: 'inline-block', width: '24px' } });
+            const mainRow = el('tr', { style: { cursor: hasData ? 'pointer' : 'default' } },
+              el('td', { style: { width: '32px', padding: '8px 4px', textAlign: 'center' } }, toggleBtn),
               el('td', { style: { fontFamily: 'monospace', fontSize: '12px', color: '#64748B', whiteSpace: 'nowrap' } }, dateStr),
               el('td', null, el('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600', color: 'white', background: actionColor } }, entry.aktion)),
               el('td', { style: { fontWeight: '500' } }, entry.entitaet),
               el('td', null, entry.name || '–'),
               el('td', { style: { fontSize: '13px', color: '#64748B' } }, entry.details || '–'),
-            ));
+            );
+            tbody.appendChild(mainRow);
+
+            if (hasData) {
+              const detailRow = el('tr', { style: { display: 'none' } });
+              const detailCell = el('td', { colSpan: '6', style: { padding: '0 16px 12px', background: '#F8FAFB', borderTop: 'none' } });
+              const detailWrap = el('div', { style: { display: 'flex', gap: '16px', flexWrap: 'wrap' } });
+              if (entry.vorherJson) {
+                const vorher = typeof entry.vorherJson === 'string' ? JSON.parse(entry.vorherJson) : entry.vorherJson;
+                detailWrap.appendChild(el('div', { style: { flex: '1', minWidth: '280px' } },
+                  el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#DC2626', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Vorher'),
+                  el('pre', { style: { background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', lineHeight: '1.5', overflow: 'auto', maxHeight: '200px', margin: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } }, JSON.stringify(vorher, null, 2))
+                ));
+              }
+              if (entry.nachherJson) {
+                const nachher = typeof entry.nachherJson === 'string' ? JSON.parse(entry.nachherJson) : entry.nachherJson;
+                detailWrap.appendChild(el('div', { style: { flex: '1', minWidth: '280px' } },
+                  el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#0D7377', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Nachher'),
+                  el('pre', { style: { background: '#F0FDFD', border: '1px solid #CCFBF9', borderRadius: '6px', padding: '8px 12px', fontSize: '11px', lineHeight: '1.5', overflow: 'auto', maxHeight: '200px', margin: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } }, JSON.stringify(nachher, null, 2))
+                ));
+              }
+              detailCell.appendChild(detailWrap);
+              detailRow.appendChild(detailCell);
+              tbody.appendChild(detailRow);
+
+              const toggle = () => {
+                const visible = detailRow.style.display !== 'none';
+                detailRow.style.display = visible ? 'none' : 'table-row';
+                toggleBtn.textContent = visible ? '▶' : '▼';
+                toggleBtn.style.color = visible ? '#64748B' : '#0D7377';
+              };
+              mainRow.addEventListener('click', toggle);
+            }
           }
           table.appendChild(tbody);
           tableWrap.innerHTML = '';
