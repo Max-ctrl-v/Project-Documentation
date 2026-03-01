@@ -264,6 +264,7 @@
               id: ma.id, name: ma.name, position: ma.position || '',
               wochenStunden: ma.wochenStunden || 40, jahresUrlaub: ma.jahresUrlaub || 30,
               feiertagePflicht: ma.feiertagePflicht !== false,
+              jahresgehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
               blockierungen,
             };
           });
