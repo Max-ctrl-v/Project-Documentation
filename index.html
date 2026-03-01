@@ -1313,8 +1313,8 @@
       },
 
       async init() {
-        // Try auto-login with existing refresh token
-        if (this._hasBackend() && TokenManager.hasTokens()) {
+        // Try auto-login via HttpOnly refresh cookie
+        if (this._hasBackend()) {
           try {
             const ok = await refreshTokens();
             if (ok) {
@@ -1333,7 +1333,7 @@
           } catch (e) {
             console.warn('Auto-login fehlgeschlagen:', e.message);
           }
-          // Auto-login failed — clear stale tokens so login form works fresh
+          // Auto-login failed — clear state so login form works fresh
           TokenManager.clear();
           sessionStorage.removeItem(this._sessionKey);
         }
@@ -1525,7 +1525,6 @@
               id: ma.id, name: ma.name, position: ma.position || '',
               wochenStunden: ma.wochenStunden || 40, jahresUrlaub: ma.jahresUrlaub || 30,
               feiertagePflicht: ma.feiertagePflicht !== false,
-              jahresgehalt: ma.jahresgehalt || 0, lohnnebenkosten: ma.lohnnebenkosten || 0,
               blockierungen,
             };
           });

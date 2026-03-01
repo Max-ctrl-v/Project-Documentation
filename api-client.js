@@ -6,28 +6,26 @@
 const API_BASE = window.NOVARIX_API_URL || 'http://localhost:3000/api/v1';
 
 // ─── Token Management ─────────────────────────────────────────
+// Access token: in-memory only (short-lived, 15 min)
+// Refresh token: HttpOnly cookie (managed by browser, not accessible to JS)
 const TokenManager = {
   _accessToken: null,
-  _refreshToken: null,
+  _hasSession: false,
 
-  setTokens(access, refresh) {
+  setTokens(access) {
     this._accessToken = access;
-    this._refreshToken = refresh;
-    // Refresh Token im localStorage für Tab-Persistenz
-    if (refresh) localStorage.setItem('novarix_refresh_token', refresh);
+    this._hasSession = true;
   },
 
   getAccessToken() { return this._accessToken; },
-  getRefreshToken() { return this._refreshToken || localStorage.getItem('novarix_refresh_token'); },
 
   clear() {
     this._accessToken = null;
-    this._refreshToken = null;
-    localStorage.removeItem('novarix_refresh_token');
+    this._hasSession = false;
   },
 
   hasTokens() {
-    return !!this.getRefreshToken();
+    return this._hasSession;
   },
 };
 
@@ -43,14 +41,14 @@ async function apiFetch(path, options = {}) {
     headers['Authorization'] = `Bearer ${TokenManager.getAccessToken()}`;
   }
 
-  let res = await fetch(url, { ...options, headers });
+  let res = await fetch(url, { ...options, headers, credentials: 'include' });
 
   // 401 → Token abgelaufen → Refresh versuchen
-  if (res.status === 401 && TokenManager.getRefreshToken()) {
+  if (res.status === 401 && TokenManager.hasTokens()) {
     const refreshed = await refreshTokens();
     if (refreshed) {
       headers['Authorization'] = `Bearer ${TokenManager.getAccessToken()}`;
-      res = await fetch(url, { ...options, headers });
+      res = await fetch(url, { ...options, headers, credentials: 'include' });
     } else {
       // Refresh fehlgeschlagen → Logout
       TokenManager.clear();
@@ -72,14 +70,15 @@ async function apiFetch(path, options = {}) {
 
 async function refreshTokens() {
   try {
+    // Refresh token is sent automatically as HttpOnly cookie
     const res = await fetch(`${API_BASE}/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: TokenManager.getRefreshToken() }),
+      credentials: 'include',
     });
     if (!res.ok) return false;
     const data = await res.json();
-    TokenManager.setTokens(data.accessToken, data.refreshToken);
+    TokenManager.setTokens(data.accessToken);
     return true;
   } catch {
     return false;
@@ -95,6 +94,7 @@ const AuthAPI = {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // receive HttpOnly cookie
       body: JSON.stringify({ email, password }),
     });
     if (!res.ok) {
@@ -104,7 +104,7 @@ const AuthAPI = {
       throw error;
     }
     const data = await res.json();
-    TokenManager.setTokens(data.accessToken, data.refreshToken);
+    TokenManager.setTokens(data.accessToken);
     return data.user;
   },
 
