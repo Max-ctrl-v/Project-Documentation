@@ -1504,12 +1504,14 @@
                 startDatum: (p.startDatum || '').slice(0, 10),
                 endDatum: (p.endDatum || '').slice(0, 10),
                 budget: p.budget || undefined,
+                sollKosten: p.sollKosten || p.budget || undefined,
                 arbeitspakete,
               };
             });
             return {
               id: up.id, name: up.name, beschreibung: up.beschreibung || '',
               unternehmensTyp: up.unternehmensTyp || 'kmu',
+              nurAdmin: up.nurAdmin || false,
               projekte,
             };
           });
@@ -1532,7 +1534,7 @@
           const zuweisungen = (d.zuweisungen || []).map(zw => {
             const apVert = (d.apVerteilungen || []).filter(av => av.zuweisungId === zw.id).map(av => ({
               arbeitspaketId: av.arbeitspaketId,
-              prozentAnteil: av.prozentAnteil || av.prozent,
+              prozentAnteil: av.prozentAnteil != null ? Number(av.prozentAnteil) : Number(av.prozent || 0),
             }));
             return {
               id: zw.id, mitarbeiterId: zw.mitarbeiterId,
@@ -3491,6 +3493,7 @@
             if (!name) { nameInput.style.borderColor = '#DC2626'; return; }
             if (!start) { startInput.style.borderColor = '#DC2626'; return; }
             if (!end) { endInput.style.borderColor = '#DC2626'; return; }
+            if (start > end) { startInput.style.borderColor = '#DC2626'; endInput.style.borderColor = '#DC2626'; alert('Startdatum muss vor dem Enddatum liegen.'); return; }
             const sollKosten = budgetInput.value ? parseFloat(budgetInput.value) : null;
             const projekt = existing ? { ...existing, name, beschreibung: descInput.value.trim(), startDatum: start, endDatum: end, status: statusSelect.value, sollKosten, geaendertAm: new Date().toISOString() }
               : { id: crypto.randomUUID(), name, beschreibung: descInput.value.trim(), startDatum: start, endDatum: end, status: statusSelect.value, arbeitspakete: [], sollKosten, erstelltAm: new Date().toISOString() };
@@ -5049,6 +5052,7 @@
           el('button', { className: 'btn-primary', onClick: () => {
             const name = nameInput.value.trim();
             if (!name) { nameInput.style.borderColor = '#DC2626'; return; }
+            if (startInput.value && endInput.value && startInput.value > endInput.value) { startInput.style.borderColor = '#DC2626'; endInput.style.borderColor = '#DC2626'; alert('Startdatum muss vor dem Enddatum liegen.'); return; }
             const up = DataStore.getUeberProjekt(ueberProjektId);
             const p = (up.projekte || []).find(pr => pr.id === projektId);
             if (!p) return;
@@ -5180,6 +5184,7 @@
             if (!pct || pct < 1 || pct > 100) { prozentInput.style.borderColor = '#DC2626'; return; }
             if (!vonInput.value) { vonInput.style.borderColor = '#DC2626'; return; }
             if (!bisInput.value) { bisInput.style.borderColor = '#DC2626'; return; }
+            if (vonInput.value > bisInput.value) { vonInput.style.borderColor = '#DC2626'; bisInput.style.borderColor = '#DC2626'; alert('Startdatum muss vor dem Enddatum liegen.'); return; }
 
             const apVert = aps.length > 0 && apContainer
               ? apInputs.map(item => ({
