@@ -15,6 +15,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/((?!api-client\\.js|seed-data\\.json).*)", "destination": "/index.html" }
+    { "source": "/((?!api-client\\.js|seed-data\\.json|js/).*)", "destination": "/index.html" }
   ]
 }
