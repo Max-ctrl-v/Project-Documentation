@@ -605,6 +605,35 @@
         }
       },
 
+      // Standalone Externe Entwicklungen (on ÜberProjekt level)
+      getStandaloneExterne(ueberProjektId) {
+        const up = this.getUeberProjekt(ueberProjektId);
+        return up ? (up.externeEntwicklungen || []) : [];
+      },
+      saveStandaloneExterne(ueberProjektId, entry) {
+        const data = this._read();
+        const up = data.ueberProjekte.find(u => u.id === ueberProjektId);
+        if (!up) return;
+        if (!up.externeEntwicklungen) up.externeEntwicklungen = [];
+        const idx = up.externeEntwicklungen.findIndex(e => e.id === entry.id);
+        const isNew = idx < 0;
+        if (idx >= 0) up.externeEntwicklungen[idx] = entry;
+        else up.externeEntwicklungen.push(entry);
+        this.logChange(isNew ? 'erstellt' : 'geändert', 'Externe Entwicklung', entry.id, entry.name, `in ${up.name}`, data);
+      },
+      deleteStandaloneExterne(ueberProjektId, entryId) {
+        const data = this._read();
+        const up = data.ueberProjekte.find(u => u.id === ueberProjektId);
+        if (!up || !up.externeEntwicklungen) return;
+        const entry = up.externeEntwicklungen.find(e => e.id === entryId);
+        up.externeEntwicklungen = up.externeEntwicklungen.filter(e => e.id !== entryId);
+        if (entry) {
+          this.logChange('gelöscht', 'Externe Entwicklung', entryId, entry.name, `in ${up.name}`, data);
+        } else {
+          this._write(data);
+        }
+      },
+
       // Export log
       getExportLog() { return this._read().exportLog; },
       addExportEntry(entry) {
@@ -1062,6 +1091,7 @@
         const grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' } });
         for (const up of ups) {
           const pCount = (up.projekte || []).length;
+          const eeCount = (up.externeEntwicklungen || []).length;
           const typLabel = up.unternehmensTyp === 'grossunternehmen' ? 'Großunternehmen' : 'KMU';
           const typColor = up.unternehmensTyp === 'grossunternehmen' ? '#6366F1' : '#0D7377';
           const card = el('div', { className: 'card card-clickable', tabindex: '0', onClick: () => Router.navigate(`#/ueberprojekt/${up.id}`) },
@@ -1082,6 +1112,7 @@
             ),
             el('div', { style: { display: 'flex', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F1F5F9' } },
               el('span', { style: { fontSize: '13px', color: '#64748B' } }, `${pCount} Projekt${pCount !== 1 ? 'e' : ''}`),
+              eeCount > 0 ? el('span', { style: { fontSize: '13px', color: '#6366F1' } }, `${eeCount} Extern`) : null,
               el('span', { style: { fontSize: '13px', color: '#94A3B8' } }, `Erstellt: ${formatDate(up.erstelltAm)}`)
             )
           );
@@ -2291,24 +2322,28 @@
         el('div', { style: { display: 'flex', gap: '8px' } },
           el('button', { className: 'btn-secondary', onClick: () => openExportDialog('ueberprojekt', up.id, { von: new Date().getFullYear() + '-01-01', bis: new Date().getFullYear() + '-12-31' }) }, 'PDF Export'),
           el('button', { className: 'btn-secondary', onClick: () => openUeberProjektModal(up) }, 'Bearbeiten'),
+          el('button', { className: 'btn-primary', onClick: () => openStandaloneExterneModal(up.id) }, '+ Externe Entwicklung'),
           el('button', { className: 'btn-primary', onClick: () => openProjektModal(up.id) }, '+ Neues Projekt')
         )
       );
       container.appendChild(header);
 
       const projekte = up.projekte || [];
+      const externeEntw = up.externeEntwicklungen || [];
 
-      if (projekte.length === 0) {
+      if (projekte.length === 0 && externeEntw.length === 0) {
         container.appendChild(el('div', { style: { marginTop: '32px' } },
           renderEmptyState(
             'Noch keine Projekte',
-            'Erstelle das erste Projekt für diesen Kunden.',
+            'Erstelle das erste Projekt oder eine externe Entwicklung für diesen Kunden.',
             '+ Projekt erstellen',
             () => openProjektModal(up.id)
           )
         ));
       } else {
         const grid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px', marginTop: '32px' } });
+
+        // Projekt cards
         for (const p of projekte) {
           const apCount = (p.arbeitspakete || []).length;
           const projZw = DataStore.getZuweisungenForProjekt(p.id);
@@ -2342,8 +2377,109 @@
           );
           grid.appendChild(card);
         }
+
+        // Standalone Externe Entwicklung cards
+        for (const ee of externeEntw) {
+          const foerdersumme = (Number(ee.auftragswert) || 0) * (Number(ee.foerderquote) || 0) / 100;
+          const card = el('div', {
+            className: 'card card-clickable', tabindex: '0',
+            onClick: () => Router.navigate(`#/externe/${up.id}/${ee.id}`),
+            style: { borderLeft: '3px solid #6366F1' }
+          },
+            el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' } },
+              el('div', null,
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
+                  el('h3', { style: { fontSize: '16px', margin: '0', color: '#063838' } }, ee.name),
+                  el('span', { style: { fontSize: '9px', padding: '2px 6px', borderRadius: '999px', background: '#6366F115', color: '#6366F1', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Extern')
+                ),
+                el('span', { className: `badge badge-${ee.status}` }, statusLabel(ee.status))
+              ),
+              el('button', {
+                className: 'btn-icon',
+                onClick: (e) => { e.stopPropagation(); confirmDialog(`Externe Entwicklung "${ee.name}" wirklich löschen?`, () => { DataStore.deleteStandaloneExterne(up.id, ee.id); Router.resolve(); }); },
+                'aria-label': 'Löschen'
+              }, trashIcon())
+            ),
+            ee.auftragnehmer ? el('div', { style: { marginTop: '8px', fontSize: '13px', color: '#64748B' } }, ee.auftragnehmer) : null,
+            el('div', { style: { marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #F1F5F9', fontSize: '13px', color: '#64748B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              el('span', null, `${formatEuro(Number(ee.auftragswert) || 0)} · ${ee.foerderquote || 0}%`),
+              foerdersumme > 0 ? el('span', { style: { fontWeight: '600', color: '#15803D' } }, formatEuro(foerdersumme)) : null
+            )
+          );
+          grid.appendChild(card);
+        }
+
         container.appendChild(grid);
       }
+    }
+
+    // --- Standalone Externe Entwicklung Detail ---
+    function renderStandaloneExterne(container, ueberProjektId, eeId) {
+      const up = DataStore.getUeberProjekt(ueberProjektId);
+      if (!up) { container.appendChild(renderEmptyState('Firma nicht gefunden', '', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
+      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Nur für Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
+      const ee = (up.externeEntwicklungen || []).find(e => e.id === eeId);
+      if (!ee) { container.appendChild(renderEmptyState('Externe Entwicklung nicht gefunden', '', 'Zurück', () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`))); return; }
+
+      const foerdersumme = (Number(ee.auftragswert) || 0) * (Number(ee.foerderquote) || 0) / 100;
+
+      // Breadcrumb
+      container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B', display: 'flex', alignItems: 'center', flexWrap: 'wrap' } },
+        el('a', { href: '#/dashboard', style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, 'Dashboard'),
+        breadcrumbChevron(),
+        el('a', { href: `#/ueberprojekt/${ueberProjektId}`, style: { color: '#0D7377', textDecoration: 'none', fontWeight: '500' } }, up.name),
+        breadcrumbChevron(),
+        el('span', { style: { color: '#334155' } }, ee.name)
+      ));
+
+      // Header
+      container.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' } },
+        el('div', null,
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' } },
+            el('h1', { style: { fontSize: '28px', margin: '0', color: '#063838', fontFamily: "'DM Serif Display', serif" } }, ee.name),
+            el('span', { style: { fontSize: '10px', padding: '3px 8px', borderRadius: '999px', background: '#6366F115', color: '#6366F1', fontWeight: '600', textTransform: 'uppercase' } }, 'Extern')
+          ),
+          el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' } },
+            el('span', { className: `badge badge-${ee.status}` }, statusLabel(ee.status)),
+            ee.auftragnehmer ? el('span', { style: { fontSize: '14px', color: '#64748B' } }, ee.auftragnehmer) : null
+          )
+        ),
+        el('div', { style: { display: 'flex', gap: '8px' } },
+          el('button', { className: 'btn-secondary', onClick: () => openStandaloneExterneModal(ueberProjektId, ee) }, 'Bearbeiten'),
+          el('button', { className: 'btn-secondary', style: { color: '#DC2626', borderColor: '#FCA5A5' }, onClick: () => {
+            confirmDialog(`"${ee.name}" wirklich löschen?`, () => { DataStore.deleteStandaloneExterne(ueberProjektId, eeId); Router.navigate(`#/ueberprojekt/${ueberProjektId}`); });
+          }}, 'Löschen'),
+          el('button', { className: 'btn-secondary', onClick: () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`) }, '\u2190 Zurück')
+        )
+      ));
+
+      // Key figures
+      const figures = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' } });
+      const figureItems = [
+        { label: 'Auftragswert', value: formatEuro(Number(ee.auftragswert) || 0), color: '#334155' },
+        { label: 'Förderquote', value: `${ee.foerderquote || 0}%`, color: '#0D7377' },
+        { label: 'Fördersumme', value: formatEuro(foerdersumme), color: '#15803D' },
+      ];
+      for (const fig of figureItems) {
+        figures.appendChild(el('div', { className: 'card', style: { padding: '16px 20px' } },
+          el('div', { style: { fontSize: '12px', color: '#64748B', marginBottom: '4px' } }, fig.label),
+          el('div', { style: { fontSize: '22px', fontWeight: '700', color: fig.color, fontFamily: "'DM Serif Display', serif" } }, fig.value)
+        ));
+      }
+      container.appendChild(figures);
+
+      // Description
+      if (ee.beschreibung) {
+        container.appendChild(el('div', { className: 'card', style: { padding: '20px 24px', marginBottom: '24px' } },
+          el('h3', { style: { fontSize: '16px', margin: '0 0 8px', color: '#063838', fontFamily: "'DM Serif Display', serif" } }, 'Beschreibung'),
+          el('p', { style: { fontSize: '14px', color: '#475569', lineHeight: '1.6', margin: '0', whiteSpace: 'pre-wrap' } }, ee.beschreibung)
+        ));
+      }
+
+      // Meta info
+      container.appendChild(el('div', { style: { fontSize: '12px', color: '#94A3B8', marginTop: '16px' } },
+        `Erstellt: ${ee.createdAt ? formatDate(ee.createdAt.slice(0, 10)) : '–'}`
+      ));
     }
 
     // --- Projekt Modal ---
@@ -4039,6 +4175,67 @@
               statusEl.style.color = '#DC2626';
               statusEl.textContent = 'Fehler: ' + e.message;
             }
+          }}, existing ? 'Speichern' : 'Erstellen')
+        ));
+      });
+    }
+
+    // Modal: Standalone Externe Entwicklung (ÜberProjekt-level)
+    function openStandaloneExterneModal(ueberProjektId, existing) {
+      const title = existing ? 'Externe Entwicklung bearbeiten' : 'Neue externe Entwicklung';
+      openModal(title, (body, close) => {
+        const nameInput = el('input', { className: 'form-input', placeholder: 'z.B. Spezial-Greifersystem', value: existing ? (existing.name || '') : '' });
+        const auftragnehmInput = el('input', { className: 'form-input', placeholder: 'z.B. Mustermann GmbH', value: existing ? (existing.auftragnehmer || '') : '' });
+        const wertInput = el('input', { className: 'form-input', type: 'number', placeholder: 'z.B. 50000', min: '0', step: '100', value: existing && existing.auftragswert ? existing.auftragswert : '' });
+        const quoteInput = el('input', { className: 'form-input', type: 'number', placeholder: 'z.B. 35', min: '0', max: '100', step: '1', value: existing && existing.foerderquote ? existing.foerderquote : '' });
+        const descInput = el('textarea', { className: 'form-input', rows: '3', placeholder: 'Beschreibung (optional)', style: { resize: 'vertical' } });
+        if (existing && existing.beschreibung) descInput.value = existing.beschreibung;
+        const statusSelect = el('select', { className: 'form-input' });
+        ['geplant', 'aktiv', 'abgeschlossen', 'beauftragt'].forEach(s => {
+          const opt = el('option', { value: s }, s === 'geplant' ? 'Geplant' : s === 'aktiv' ? 'Aktiv' : s === 'beauftragt' ? 'Beauftragt' : 'Abgeschlossen');
+          if (existing && existing.status === s) opt.selected = true;
+          else if (!existing && s === 'aktiv') opt.selected = true;
+          statusSelect.appendChild(opt);
+        });
+
+        const foerderDisplay = el('div', { style: { fontSize: '13px', color: '#15803D', fontWeight: '600', marginTop: '4px', minHeight: '18px' } });
+        function updateFoerderDisplay() {
+          const w = Number(wertInput.value) || 0;
+          const q = Number(quoteInput.value) || 0;
+          const sum = w * q / 100;
+          foerderDisplay.textContent = w > 0 && q > 0 ? `= ${formatEuro(sum)} Fördersumme` : '';
+        }
+        wertInput.addEventListener('input', updateFoerderDisplay);
+        quoteInput.addEventListener('input', updateFoerderDisplay);
+
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Name / Bezeichnung *'), nameInput));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Auftragnehmer / Dienstleister'), auftragnehmInput));
+        body.appendChild(el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' } },
+          el('div', null, el('label', { className: 'form-label' }, 'Auftragswert (EUR)'), wertInput),
+          el('div', null, el('label', { className: 'form-label' }, 'Förderquote (%)'), quoteInput, foerderDisplay)
+        ));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Status'), statusSelect));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Beschreibung'), descInput));
+        updateFoerderDisplay();
+
+        body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' } },
+          el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
+          el('button', { className: 'btn-primary', onClick: () => {
+            const name = nameInput.value.trim();
+            if (!name) { alert('Bitte einen Namen eingeben.'); nameInput.focus(); return; }
+            const entry = {
+              id: existing ? existing.id : ('ee-' + crypto.randomUUID()),
+              name,
+              auftragnehmer: auftragnehmInput.value.trim(),
+              auftragswert: Number(wertInput.value) || 0,
+              foerderquote: Number(quoteInput.value) || 0,
+              status: statusSelect.value,
+              beschreibung: descInput.value.trim(),
+              createdAt: existing ? existing.createdAt : new Date().toISOString(),
+            };
+            DataStore.saveStandaloneExterne(ueberProjektId, entry);
+            close();
+            Router.resolve();
           }}, existing ? 'Speichern' : 'Erstellen')
         ));
       });
@@ -6352,6 +6549,7 @@
     Router.register('#/mitarbeiter-kalender/:maId', withErrorBoundary(renderMitarbeiterKalender));
     Router.register('#/projekt-kalender/:upId/:pId', withErrorBoundary(renderProjektKalender));
     Router.register('#/ap-kalender/:upId/:pId/:apId', withErrorBoundary(renderApKalender));
+    Router.register('#/externe/:upId/:eeId', withErrorBoundary(renderStandaloneExterne));
 
     // ─── Multi-Tab Sync: reload view when another tab changes localStorage ───
     window.addEventListener('storage', (e) => {
