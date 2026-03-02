@@ -429,6 +429,32 @@ const DataStoreAPI = {
     return apiFetch(`/dokumente/${id}`, { method: 'DELETE' });
   },
 
+  async uploadDokumentGeneric(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `${API_BASE}/dokumente/upload`;
+    const headers = {};
+    if (TokenManager.getAccessToken()) {
+      headers['Authorization'] = `Bearer ${TokenManager.getAccessToken()}`;
+    }
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+
+  async getDokumenteByIds(ids) {
+    if (!ids || ids.length === 0) return [];
+    return apiFetch(`/dokumente/by-ids?ids=${ids.join(',')}`);
+  },
+
   // ─── Sitzungsprotokoll ─────────────────────────────────────
   async getSessionLogs(limit = 100, offset = 0) {
     return apiFetch(`/session-logs?limit=${limit}&offset=${offset}`);

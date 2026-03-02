@@ -2414,14 +2414,22 @@
     }
 
     // --- Standalone Externe Entwicklung Detail ---
-    function renderStandaloneExterne(container, ueberProjektId, eeId) {
+    async function renderStandaloneExterne(container, ueberProjektId, eeId) {
       const up = DataStore.getUeberProjekt(ueberProjektId);
       if (!up) { container.appendChild(renderEmptyState('Firma nicht gefunden', '', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
-      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Nur für Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
+      if (up.nurAdmin && !AuthSystem.isAdmin()) { container.appendChild(renderEmptyState('Kein Zugriff', 'Nur f\u00FCr Admin-Benutzer sichtbar.', 'Zum Dashboard', () => Router.navigate('#/dashboard'))); return; }
       const ee = (up.externeEntwicklungen || []).find(e => e.id === eeId);
-      if (!ee) { container.appendChild(renderEmptyState('Externe Entwicklung nicht gefunden', '', 'Zurück', () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`))); return; }
+      if (!ee) { container.appendChild(renderEmptyState('Externe Entwicklung nicht gefunden', '', 'Zur\u00FCck', () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`))); return; }
+
+      // Load documents from backend
+      let allDocs = [];
+      const docIds = ee.dokumentIds || [];
+      if (docIds.length > 0) {
+        try { allDocs = await DataStoreAPI.getDokumenteByIds(docIds) || []; } catch (_) {}
+      }
 
       const foerdersumme = (Number(ee.auftragswert) || 0) * (Number(ee.foerderquote) || 0) / 100;
+      const isEditable = AuthSystem.isAdmin() || AuthSystem.getRole() === 'editor';
 
       // Breadcrumb
       container.appendChild(el('div', { style: { marginBottom: '24px', fontSize: '13px', color: '#64748B', display: 'flex', alignItems: 'center', flexWrap: 'wrap' } },
@@ -2445,11 +2453,11 @@
           )
         ),
         el('div', { style: { display: 'flex', gap: '8px' } },
-          el('button', { className: 'btn-secondary', onClick: () => openStandaloneExterneModal(ueberProjektId, ee) }, 'Bearbeiten'),
-          el('button', { className: 'btn-secondary', style: { color: '#DC2626', borderColor: '#FCA5A5' }, onClick: () => {
-            confirmDialog(`"${ee.name}" wirklich löschen?`, () => { DataStore.deleteStandaloneExterne(ueberProjektId, eeId); Router.navigate(`#/ueberprojekt/${ueberProjektId}`); });
-          }}, 'Löschen'),
-          el('button', { className: 'btn-secondary', onClick: () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`) }, '\u2190 Zurück')
+          isEditable ? el('button', { className: 'btn-secondary', onClick: () => openStandaloneExterneModal(ueberProjektId, ee, allDocs) }, 'Bearbeiten') : null,
+          isEditable ? el('button', { className: 'btn-secondary', style: { color: '#DC2626', borderColor: '#FCA5A5' }, onClick: () => {
+            confirmDialog(`"${ee.name}" wirklich l\u00F6schen?`, () => { DataStore.deleteStandaloneExterne(ueberProjektId, eeId); Router.navigate(`#/ueberprojekt/${ueberProjektId}`); });
+          }}, 'L\u00F6schen') : null,
+          el('button', { className: 'btn-secondary', onClick: () => Router.navigate(`#/ueberprojekt/${ueberProjektId}`) }, '\u2190 Zur\u00FCck')
         )
       ));
 
@@ -2457,8 +2465,8 @@
       const figures = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' } });
       const figureItems = [
         { label: 'Auftragswert', value: formatEuro(Number(ee.auftragswert) || 0), color: '#334155' },
-        { label: 'Förderquote', value: `${ee.foerderquote || 0}%`, color: '#0D7377' },
-        { label: 'Fördersumme', value: formatEuro(foerdersumme), color: '#15803D' },
+        { label: 'F\u00F6rderquote', value: `${ee.foerderquote || 0}%`, color: '#0D7377' },
+        { label: 'F\u00F6rdersumme', value: formatEuro(foerdersumme), color: '#15803D' },
       ];
       for (const fig of figureItems) {
         figures.appendChild(el('div', { className: 'card', style: { padding: '16px 20px' } },
@@ -2476,10 +2484,121 @@
         ));
       }
 
+      // Documents section
+      const docsCard = el('div', { className: 'card', style: { padding: '20px 24px', marginBottom: '24px' } });
+      const docsHeader = el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+        el('h3', { style: { fontSize: '16px', margin: '0', color: '#063838', fontFamily: "'DM Serif Display', serif" } }, `Dokumente (${allDocs.length})`),
+        isEditable ? el('button', { className: 'btn-secondary', style: { fontSize: '13px', padding: '6px 14px' }, onClick: () => openStandaloneExterneDokUploadModal(ueberProjektId, ee) }, '+ Hinzuf\u00FCgen') : null
+      );
+      docsCard.appendChild(docsHeader);
+
+      if (allDocs.length === 0) {
+        docsCard.appendChild(el('p', { style: { fontSize: '14px', color: '#94A3B8', margin: '0' } }, 'Noch keine Dokumente hochgeladen.'));
+      } else {
+        for (const doc of allDocs) {
+          const sizeStr = doc.size < 1024 * 1024 ? `${Math.round(doc.size / 1024)} KB` : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+          docsCard.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '6px' } },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: '1' }, onClick: () => downloadBackendDocument(doc) },
+              el('span', { style: { fontSize: '18px' } }, '\uD83D\uDCC4'),
+              el('span', { style: { fontSize: '14px', color: '#334155', fontWeight: '500' } }, doc.name),
+              el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr)
+            ),
+            isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, 'aria-label': 'Entfernen', onClick: () => {
+              confirmDialog(`"${doc.name}" entfernen?`, async () => {
+                const updated = { ...ee, dokumentIds: (ee.dokumentIds || []).filter(id => id !== doc.id) };
+                DataStore.saveStandaloneExterne(ueberProjektId, updated);
+                try { await DataStoreAPI.deleteDokument(doc.id); } catch (_) {}
+                Router.resolve();
+              });
+            }}, '\uD83D\uDDD1') : null
+          ));
+        }
+      }
+      container.appendChild(docsCard);
+
       // Meta info
       container.appendChild(el('div', { style: { fontSize: '12px', color: '#94A3B8', marginTop: '16px' } },
-        `Erstellt: ${ee.createdAt ? formatDate(ee.createdAt.slice(0, 10)) : '–'}`
+        `Erstellt: ${ee.createdAt ? formatDate(ee.createdAt.slice(0, 10)) : '\u2013'}`
       ));
+    }
+
+    // Modal: Upload documents to standalone Externe Entwicklung
+    function openStandaloneExterneDokUploadModal(ueberProjektId, entry) {
+      openModal('Dokumente hinzuf\u00FCgen', (body, close) => {
+        const fileInput = el('input', { type: 'file', accept: '.pdf', multiple: true, style: { display: 'none' } });
+        let selectedFiles = [];
+
+        const fileListContainer = el('div', { style: { marginBottom: '16px' } });
+        function renderFileList() {
+          fileListContainer.innerHTML = '';
+          if (selectedFiles.length === 0) return;
+          fileListContainer.appendChild(el('label', { className: 'form-label', style: { marginBottom: '8px' } }, 'Ausgew\u00E4hlte Dateien'));
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            const sizeStr = file.size < 1024 * 1024 ? `${Math.round(file.size / 1024)} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            const idx = i;
+            fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, file.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr)
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { selectedFiles.splice(idx, 1); renderFileList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+        }
+        body.appendChild(fileListContainer);
+
+        const uploadZone = el('div', {
+          style: { border: '2px dashed #CBD5E1', borderRadius: '12px', padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' },
+          onClick: () => fileInput.click(),
+        },
+          el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83D\uDCC1'),
+          el('p', { style: { fontSize: '14px', color: '#475569', margin: '0 0 4px' } }, 'PDF-Dateien hier ablegen oder klicken'),
+          el('p', { style: { fontSize: '12px', color: '#94A3B8', margin: '0' } }, 'Nur PDF, max. 5 MB pro Datei')
+        );
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#0D7377'; uploadZone.style.background = '#F0FDFD'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; });
+        uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; addFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', (e) => { addFiles(e.target.files); fileInput.value = ''; });
+
+        function addFiles(files) {
+          for (const file of files) {
+            if (file.type !== 'application/pdf') { alert(`"${file.name}" ist keine PDF-Datei.`); continue; }
+            if (file.size > 5 * 1024 * 1024) { alert(`"${file.name}" ist zu gro\u00DF (max. 5 MB).`); continue; }
+            selectedFiles.push(file);
+          }
+          renderFileList();
+        }
+        body.appendChild(uploadZone);
+        body.appendChild(fileInput);
+
+        const statusEl = el('div', { style: { display: 'none', padding: '8px', fontSize: '13px', color: '#0D7377', marginTop: '8px' } });
+        body.appendChild(statusEl);
+
+        body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' } },
+          el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
+          el('button', { className: 'btn-primary', onClick: async () => {
+            if (selectedFiles.length === 0) { close(); return; }
+            statusEl.style.display = 'block';
+            try {
+              const newDocIds = [];
+              for (let i = 0; i < selectedFiles.length; i++) {
+                statusEl.textContent = `Lade Datei ${i + 1}/${selectedFiles.length} hoch...`;
+                const result = await DataStoreAPI.uploadDokumentGeneric(selectedFiles[i]);
+                if (result && result.id) newDocIds.push(result.id);
+              }
+              const updated = { ...entry, dokumentIds: [...(entry.dokumentIds || []), ...newDocIds] };
+              DataStore.saveStandaloneExterne(ueberProjektId, updated);
+              close();
+              Router.resolve();
+            } catch (e) {
+              statusEl.style.color = '#DC2626';
+              statusEl.textContent = 'Fehler: ' + e.message;
+            }
+          }}, 'Hochladen')
+        ));
+      });
     }
 
     // --- Projekt Modal ---
@@ -4181,7 +4300,7 @@
     }
 
     // Modal: Standalone Externe Entwicklung (ÜberProjekt-level)
-    function openStandaloneExterneModal(ueberProjektId, existing) {
+    function openStandaloneExterneModal(ueberProjektId, existing, existingDocs) {
       const title = existing ? 'Externe Entwicklung bearbeiten' : 'Neue externe Entwicklung';
       openModal(title, (body, close) => {
         const nameInput = el('input', { className: 'form-input', placeholder: 'z.B. Spezial-Greifersystem', value: existing ? (existing.name || '') : '' });
@@ -4218,24 +4337,121 @@
         body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Beschreibung'), descInput));
         updateFoerderDisplay();
 
+        // File upload zone
+        const fileInput = el('input', { type: 'file', accept: '.pdf', multiple: true, style: { display: 'none' } });
+        let selectedFiles = [];
+        let existingDocIds = existing ? [...(existing.dokumentIds || [])] : [];
+        const knownDocs = existingDocIds.map(id => (existingDocs || []).find(d => d.id === id)).filter(Boolean);
+
+        const fileSection = el('div', { style: { marginBottom: '16px' } });
+        fileSection.appendChild(el('label', { className: 'form-label' }, 'Dokumente'));
+
+        const fileListContainer = el('div', { style: { marginBottom: '8px' } });
+        function renderFileList() {
+          fileListContainer.innerHTML = '';
+          for (const doc of knownDocs) {
+            if (!existingDocIds.includes(doc.id)) continue;
+            const sizeStr = doc.size < 1024 * 1024 ? `${Math.round(doc.size / 1024)} KB` : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+            fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: '#F0FDF4', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, doc.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr)
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { existingDocIds = existingDocIds.filter(id => id !== doc.id); renderFileList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            const sizeStr = file.size < 1024 * 1024 ? `${Math.round(file.size / 1024)} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            const idx = i;
+            fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, file.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr),
+                el('span', { style: { fontSize: '10px', color: '#0D7377', background: '#F0FDFD', padding: '1px 6px', borderRadius: '4px' } }, 'Neu')
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { selectedFiles.splice(idx, 1); renderFileList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+        }
+        fileSection.appendChild(fileListContainer);
+
+        const uploadZone = el('div', {
+          style: { border: '2px dashed #CBD5E1', borderRadius: '10px', padding: '16px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' },
+          onClick: () => fileInput.click(),
+        },
+          el('p', { style: { fontSize: '13px', color: '#475569', margin: '0 0 2px' } }, 'PDF-Dateien hier ablegen oder klicken'),
+          el('p', { style: { fontSize: '11px', color: '#94A3B8', margin: '0' } }, 'Nur PDF, max. 5 MB pro Datei')
+        );
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#0D7377'; uploadZone.style.background = '#F0FDFD'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; });
+        uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; addFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', (e) => { addFiles(e.target.files); fileInput.value = ''; });
+
+        function addFiles(files) {
+          for (const file of files) {
+            if (file.type !== 'application/pdf') { alert(`"${file.name}" ist keine PDF-Datei.`); continue; }
+            if (file.size > 5 * 1024 * 1024) { alert(`"${file.name}" ist zu gro\u00DF (max. 5 MB).`); continue; }
+            selectedFiles.push(file);
+          }
+          renderFileList();
+        }
+        fileSection.appendChild(uploadZone);
+        fileSection.appendChild(fileInput);
+        body.appendChild(fileSection);
+        renderFileList();
+
+        // Status message
+        const statusEl = el('div', { style: { display: 'none', padding: '8px', fontSize: '13px', color: '#0D7377', marginTop: '8px' } });
+        body.appendChild(statusEl);
+
         body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' } },
           el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
-          el('button', { className: 'btn-primary', onClick: () => {
+          el('button', { className: 'btn-primary', onClick: async () => {
             const name = nameInput.value.trim();
             if (!name) { alert('Bitte einen Namen eingeben.'); nameInput.focus(); return; }
-            const entry = {
-              id: existing ? existing.id : ('ee-' + crypto.randomUUID()),
-              name,
-              auftragnehmer: auftragnehmInput.value.trim(),
-              auftragswert: Number(wertInput.value) || 0,
-              foerderquote: Number(quoteInput.value) || 0,
-              status: statusSelect.value,
-              beschreibung: descInput.value.trim(),
-              createdAt: existing ? existing.createdAt : new Date().toISOString(),
-            };
-            DataStore.saveStandaloneExterne(ueberProjektId, entry);
-            close();
-            Router.resolve();
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Speichere...';
+
+            try {
+              // Upload new files via generic endpoint
+              const newDocIds = [];
+              for (let i = 0; i < selectedFiles.length; i++) {
+                statusEl.textContent = `Lade Datei ${i + 1}/${selectedFiles.length} hoch...`;
+                const result = await DataStoreAPI.uploadDokumentGeneric(selectedFiles[i]);
+                if (result && result.id) newDocIds.push(result.id);
+              }
+
+              // Delete removed existing docs from backend
+              if (existing) {
+                const removedIds = (existing.dokumentIds || []).filter(id => !existingDocIds.includes(id));
+                for (const id of removedIds) {
+                  try { await DataStoreAPI.deleteDokument(id); } catch (_) {}
+                }
+              }
+
+              const entry = {
+                id: existing ? existing.id : ('ee-' + crypto.randomUUID()),
+                name,
+                auftragnehmer: auftragnehmInput.value.trim(),
+                auftragswert: Number(wertInput.value) || 0,
+                foerderquote: Number(quoteInput.value) || 0,
+                status: statusSelect.value,
+                beschreibung: descInput.value.trim(),
+                dokumentIds: [...existingDocIds, ...newDocIds],
+                createdAt: existing ? existing.createdAt : new Date().toISOString(),
+              };
+
+              DataStore.saveStandaloneExterne(ueberProjektId, entry);
+              close();
+              Router.resolve();
+            } catch (e) {
+              statusEl.style.color = '#DC2626';
+              statusEl.textContent = 'Fehler: ' + e.message;
+            }
           }}, existing ? 'Speichern' : 'Erstellen')
         ));
       });
