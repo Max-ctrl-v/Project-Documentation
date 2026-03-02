@@ -1263,6 +1263,27 @@
       return ft ? ft.name : null;
     }
 
+    function getInitials(name) {
+      const parts = (name || '').trim().split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      return (name || '?').slice(0, 2).toUpperCase();
+    }
+
+    const ABSENCE_LABELS = { urlaub: 'U', krank: 'K', feiertag: 'F' };
+    const ABSENCE_COLORS = { urlaub: '#0D7377', krank: '#DC2626', feiertag: '#F59E0B' };
+    const ABSENCE_LABELS_FULL = { urlaub: 'Urlaub', krank: 'Krank', feiertag: 'Feiertag' };
+
+    function buildAbsenceBadge(ma, blockType, feiertage, dateStr) {
+      const initials = getInitials(ma.name);
+      const label = ABSENCE_LABELS[blockType] || '?';
+      const ftName = blockType === 'feiertag' ? getFeiertagName(dateStr, feiertage) : null;
+      const tooltip = `${ma.name} – ${ABSENCE_LABELS_FULL[blockType] || blockType}${ftName ? ': ' + ftName : ''}`;
+      return el('span', {
+        className: `cal-absence-badge cal-absence-badge--${blockType}`,
+        title: tooltip,
+      }, `${initials}·${label}`);
+    }
+
     // --- Range Selection State Machine ---
     function attachRangeSelection(gridEl, onRangeComplete) {
       let dragging = false;
@@ -1404,6 +1425,35 @@
         );
         container.appendChild(budgetCard);
 
+        // Monthly summary — count day types for the displayed month
+        const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+        let mWorkDays = 0, mUrlaub = 0, mKrank = 0, mFeiertag = 0;
+        for (let d = 1; d <= daysInMonth; d++) {
+          const ds = toDateStr(curYear, curMonth, d);
+          const typ = classifyDay(ds, freshMa, feiertage);
+          if (typ === 'frei') mWorkDays++;
+          else if (typ === 'urlaub') mUrlaub++;
+          else if (typ === 'krank') mKrank++;
+          else if (typ === 'feiertag') mFeiertag++;
+        }
+        const summaryStats = [
+          { label: 'Arbeitstage', value: mWorkDays, color: '#10B981', icon: '\u2714' },
+          { label: 'Urlaub', value: mUrlaub, color: '#0D7377', icon: '\u2708' },
+          { label: 'Krank', value: mKrank, color: '#DC2626', icon: '\u2716' },
+        ];
+        if (freshMa.feiertagePflicht) summaryStats.push({ label: 'Feiertage', value: mFeiertag, color: '#F59E0B', icon: '\u2605' });
+        const summaryRow = el('div', { style: { display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' } });
+        for (const s of summaryStats) {
+          summaryRow.appendChild(el('div', { style: { flex: '1', minWidth: '120px', padding: '12px 16px', background: 'white', borderRadius: '8px', border: `1px solid ${s.color}20`, boxShadow: `0 1px 3px ${s.color}10` } },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+              el('span', { style: { fontSize: '14px' } }, s.icon),
+              el('span', { style: { fontSize: '12px', color: '#64748B', fontWeight: '500' } }, s.label)
+            ),
+            el('div', { style: { fontSize: '22px', fontWeight: '700', color: s.color, fontFamily: "'DM Serif Display', serif" } }, String(s.value))
+          ));
+        }
+        container.appendChild(summaryRow);
+
         // Calendar nav
         container.appendChild(buildCalendarNav(curYear, curMonth, (y, m) => { curYear = y; curMonth = m; render(); }));
 
@@ -1414,16 +1464,37 @@
             if (typ === 'urlaub') return ['cal-day--urlaub'];
             if (typ === 'krank') return ['cal-day--krank'];
             if (typ === 'feiertag') return ['cal-day--feiertag'];
+            if (typ === 'frei') {
+              const hasWork = maZuweisungen.some(zw => ds >= zw.von && ds <= zw.bis);
+              if (hasWork) return ['cal-day--working'];
+            }
             return [];
           },
           getDayContent: (ds) => {
             const typ = classifyDay(ds, freshMa, feiertage);
             if (typ === 'feiertag') {
               const name = getFeiertagName(ds, feiertage);
-              if (name) return el('span', { className: 'cal-day-label' }, name);
+              const b = !name ? findBlockierungForDay(freshMa, ds) : null;
+              const displayName = name || (b && b.notiz ? b.notiz : 'Feiertag');
+              const wrap = el('div', null);
+              wrap.appendChild(el('span', { className: 'cal-day-icon', style: { color: '#D97706' } }, '\u2605'));
+              wrap.appendChild(el('span', { className: 'cal-day-label' }, displayName));
+              return wrap;
             }
-            if (typ === 'urlaub') return el('span', { className: 'cal-day-label' }, 'Urlaub');
-            if (typ === 'krank') return el('span', { className: 'cal-day-label' }, 'Krank');
+            if (typ === 'urlaub') {
+              const b = findBlockierungForDay(freshMa, ds);
+              const wrap = el('div', null);
+              wrap.appendChild(el('span', { className: 'cal-day-icon', style: { color: '#0D7377' } }, '\u2708'));
+              wrap.appendChild(el('span', { className: 'cal-day-label' }, b && b.notiz ? b.notiz : 'Urlaub'));
+              return wrap;
+            }
+            if (typ === 'krank') {
+              const b = findBlockierungForDay(freshMa, ds);
+              const wrap = el('div', null);
+              wrap.appendChild(el('span', { className: 'cal-day-icon', style: { color: '#DC2626' } }, '\u2716'));
+              wrap.appendChild(el('span', { className: 'cal-day-label' }, b && b.notiz ? b.notiz : 'Krank'));
+              return wrap;
+            }
             // Free workday: show AP assignment dots
             if (typ === 'frei') {
               const dots = [];
@@ -1441,7 +1512,7 @@
           },
           getDayTooltip: (ds) => {
             const typ = classifyDay(ds, freshMa, feiertage);
-            if (typ === 'feiertag') return getFeiertagName(ds, feiertage) || 'Feiertag';
+            if (typ === 'feiertag') { const fn = getFeiertagName(ds, feiertage); if (fn) return fn; const b = findBlockierungForDay(freshMa, ds); return b && b.notiz ? `Feiertag: ${b.notiz}` : 'Feiertag'; }
             if (typ === 'urlaub') { const b = findBlockierungForDay(freshMa, ds); return b && b.notiz ? `Urlaub: ${b.notiz}` : 'Urlaub'; }
             if (typ === 'krank') { const b = findBlockierungForDay(freshMa, ds); return b && b.notiz ? `Krank: ${b.notiz}` : 'Krank'; }
             if (typ === 'frei') {
@@ -1454,7 +1525,7 @@
                   lines.push(`${projName}: ${apNameMap[av.arbeitspaketId] || '?'} (${av.prozentAnteil}%)`);
                 }
               }
-              return lines.length > 0 ? lines.join('\n') : null;
+              return lines.length > 0 ? lines.join('\n') : 'Arbeitstag (keine Zuweisung)';
             }
             return null;
           },
@@ -1465,11 +1536,10 @@
         // Wire range selection
         _rangeSelection = attachRangeSelection(grid, (von, bis, wasDrag) => {
           const typ = classifyDay(von, freshMa, feiertage);
-          if (!wasDrag && (typ === 'urlaub' || typ === 'krank')) {
+          if (!wasDrag && (typ === 'urlaub' || typ === 'krank' || typ === 'feiertag')) {
             // Clicked on existing blockierung → show detail
             const b = findBlockierungForDay(freshMa, von);
-            if (b) showBlockierungDetail(b, freshMa, render);
-            return;
+            if (b) { showBlockierungDetail(b, freshMa, render); return; }
           }
           // Show picker to add new
           showBlockierungPicker(von, bis, freshMa, render);
@@ -1477,10 +1547,12 @@
 
         // Legend
         const legendItems = [
-          { color: '#0D7377', label: 'Urlaub' },
-          { color: '#DC2626', label: 'Krank' },
+          { color: '#10B981', label: 'Arbeitstag', icon: '\u2714' },
+          { color: '#0D7377', label: 'Urlaub', icon: '\u2708' },
+          { color: '#DC2626', label: 'Krank', icon: '\u2716' },
         ];
-        if (freshMa.feiertagePflicht) legendItems.push({ color: '#F59E0B', label: 'Feiertag' });
+        const hasCustomFeiertage = (freshMa.blockierungen || []).some(b => b.typ === 'feiertag');
+        if (freshMa.feiertagePflicht || hasCustomFeiertage) legendItems.push({ color: '#F59E0B', label: 'Feiertag', icon: '\u2605' });
         legendItems.push({ color: '#F1F5F9', label: 'Wochenende' });
         for (const apId of Object.keys(apColorMap)) {
           legendItems.push({ color: apColorMap[apId], label: apNameMap[apId] });
@@ -1541,6 +1613,10 @@
             onClick: () => { addBlockierungToMA(ma.id, 'krank', von, bis, notizInput.value.trim()); close(); refreshFn(); }
           }, 'Krank'),
           el('button', {
+            style: { padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', background: '#F59E0B', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
+            onClick: () => { addBlockierungToMA(ma.id, 'feiertag', von, bis, notizInput.value.trim()); close(); refreshFn(); }
+          }, 'Feiertag'),
+          el('button', {
             className: 'btn-primary',
             onClick: () => { addBlockierungToMA(ma.id, 'urlaub', von, bis, notizInput.value.trim()); close(); refreshFn(); }
           }, 'Urlaub')
@@ -1550,8 +1626,8 @@
 
     function showBlockierungDetail(blockierung, ma, refreshFn) {
       const days = CalcEngine.countWeekdays(blockierung.von, blockierung.bis);
-      const typLabel = blockierung.typ === 'urlaub' ? 'Urlaub' : 'Krank';
-      const typColor = blockierung.typ === 'urlaub' ? '#0D7377' : '#DC2626';
+      const typLabel = blockierung.typ === 'urlaub' ? 'Urlaub' : blockierung.typ === 'feiertag' ? 'Feiertag' : 'Krank';
+      const typColor = blockierung.typ === 'urlaub' ? '#0D7377' : blockierung.typ === 'feiertag' ? '#F59E0B' : '#DC2626';
       openModal('Blockierung Details', (body, close) => {
         body.appendChild(el('div', { style: { padding: '16px', background: blockierung.typ === 'urlaub' ? '#F0FDFD' : '#FEF2F2', borderRadius: '8px', borderLeft: `3px solid ${typColor}`, marginBottom: '16px' } },
           el('div', { style: { fontSize: '15px', fontWeight: '600', color: typColor } }, typLabel),
@@ -1584,8 +1660,8 @@
     }
 
     // --- Projekt-Kalender ---
-    const EMPLOYEE_PALETTE = ['#0D7377','#6366F1','#EC4899','#8B5CF6','#06B6D4','#10B981','#F97316','#EF4444'];
-    const AP_PALETTE = ['#6366F1','#8B5CF6','#EC4899','#06B6D4','#10B981','#F97316','#EF4444','#0D7377','#D946EF','#0EA5E9'];
+    const EMPLOYEE_PALETTE = ['#E6194B','#3CB44B','#4363D8','#F58231','#911EB4','#42D4F4','#F032E6','#469990'];
+    const AP_PALETTE = ['#4363D8','#E6194B','#3CB44B','#F58231','#911EB4','#F032E6','#42D4F4','#469990','#9A6324','#000075'];
 
     function renderProjektKalender(container, ueberProjektId, projektId) {
       const up = DataStore.getUeberProjekt(ueberProjektId);
@@ -1669,19 +1745,26 @@
             if (d.getDay() === 0 || d.getDay() === 6) return null;
 
             const dots = [];
+            const badges = [];
             for (const { zw, ma } of employeeData) {
               if (ds < zw.von || ds > zw.bis) continue;
               const blockType = getBlockTypeForDay(ma, ds, feiertage);
-              const color = blockType ? (blockType === 'krank' ? '#DC2626' : blockType === 'feiertag' ? '#F59E0B' : '#0D7377') : colorMap[ma.id];
-              const pctOpacity = Math.max(0.15, Math.min(1, zw.prozentAnteil / 100));
-              dots.push(el('span', {
-                className: `cal-dot${blockType ? ' cal-dot--blocked' : ''}`,
-                style: { background: color, opacity: blockType ? 0.4 : pctOpacity },
-                title: `${ma.name} (${zw.prozentAnteil}%)${blockType ? ' – ' + (blockType === 'urlaub' ? 'Urlaub' : blockType === 'krank' ? 'Krank' : 'Feiertag') : ''}`
-              }));
+              if (blockType) {
+                badges.push(buildAbsenceBadge(ma, blockType, feiertage, ds));
+              } else {
+                const pctOpacity = Math.max(0.15, Math.min(1, zw.prozentAnteil / 100));
+                dots.push(el('span', {
+                  className: 'cal-dot',
+                  style: { background: colorMap[ma.id], opacity: pctOpacity },
+                  title: `${ma.name} (${zw.prozentAnteil}%)`
+                }));
+              }
             }
-            if (dots.length === 0) return null;
-            return el('div', { className: 'cal-day-dots' }, ...dots);
+            if (dots.length === 0 && badges.length === 0) return null;
+            const wrapper = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '1px', marginTop: '2px' } });
+            if (dots.length > 0) wrapper.appendChild(el('div', { className: 'cal-day-dots' }, ...dots));
+            for (const badge of badges) wrapper.appendChild(badge);
+            return wrapper;
           },
           getDayTooltip: (ds) => {
             if ((p.startDatum && ds < p.startDatum) || (p.endDatum && ds > p.endDatum)) return null;
@@ -1976,19 +2059,15 @@
             const d = new Date(ds);
             if (d.getDay() === 0 || d.getDay() === 6) return null;
             const dots = [];
+            const badges = [];
             for (const { zw, ma, apProzent } of employeeData) {
               if (ds < zw.von || ds > zw.bis) continue;
               const blockType = getBlockTypeForDay(ma, ds, feiertage);
               const sched = employeeSchedule[ma.id];
 
-              // Blocked day within range — show blocked indicator
+              // Blocked day within range — show absence badge
               if (blockType) {
-                const color = blockType === 'krank' ? '#DC2626' : blockType === 'feiertag' ? '#F59E0B' : '#0D7377';
-                dots.push(el('span', {
-                  className: 'cal-dot cal-dot--blocked',
-                  style: { background: color, opacity: 0.4 },
-                  title: `${ma.name} – ${blockType}`
-                }));
+                badges.push(buildAbsenceBadge(ma, blockType, feiertage, ds));
                 continue;
               }
 
@@ -2013,8 +2092,11 @@
                 }));
               }
             }
-            if (dots.length === 0) return null;
-            return el('div', { className: 'cal-day-dots' }, ...dots);
+            if (dots.length === 0 && badges.length === 0) return null;
+            const wrapper = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '1px', marginTop: '2px' } });
+            if (dots.length > 0) wrapper.appendChild(el('div', { className: 'cal-day-dots' }, ...dots));
+            for (const badge of badges) wrapper.appendChild(badge);
+            return wrapper;
           },
           getDayTooltip: (ds) => {
             if ((apStart && ds < apStart) || (apEnd && ds > apEnd)) return null;
@@ -4081,7 +4163,7 @@
             el('div', { style: { display: 'flex', gap: '4px' } },
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openExportDialog('mitarbeiter', ma.id, { von: jahr + '-01-01', bis: jahr + '-12-31' }) }, 'PDF'),
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => Router.navigate(`#/mitarbeiter-kalender/${ma.id}`) }, 'Kalender'),
-              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Urlaub & Krank'),
+              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Abwesenheiten'),
               el('button', { className: 'btn-icon', onClick: () => openMitarbeiterModal(ma), 'aria-label': 'Bearbeiten' }, '\u270E'),
               el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${ma.name}" und alle Zuweisungen löschen?`, () => { DataStore.deleteMitarbeiter(ma.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
             )
@@ -4134,17 +4216,19 @@
       });
     }
 
-    // --- Urlaub & Krank Modal ---
+    // --- Urlaub, Krank & Feiertage Modal ---
     function openBlockierungModal(ma) {
-      openModal(`Urlaub & Krank: ${ma.name}`, (body, close) => {
+      openModal(`Urlaub, Krank & Feiertage: ${ma.name}`, (body, close) => {
         const budgetEl = el('div');
         const urlaubListEl = el('div');
         const krankListEl = el('div');
+        const feiertagListEl = el('div');
 
         function refreshAll() {
           renderBudget();
           renderSection('urlaub', urlaubListEl);
           renderSection('krank', krankListEl);
+          renderSection('feiertag', feiertagListEl);
         }
 
         function renderBudget() {
@@ -4173,9 +4257,9 @@
           container.innerHTML = '';
           const current = DataStore.getMitarbeiterById(ma.id);
           const items = (current ? (current.blockierungen || []) : []).filter(b => b.typ === typ);
-          const label = typ === 'urlaub' ? 'Urlaubstage' : 'Krankheitstage';
-          const color = typ === 'urlaub' ? '#0D7377' : '#DC2626';
-          const bgColor = typ === 'urlaub' ? '#F0FDFD' : '#FEF2F2';
+          const label = typ === 'urlaub' ? 'Urlaubstage' : typ === 'feiertag' ? 'Individuelle Feiertage' : 'Krankheitstage';
+          const color = typ === 'urlaub' ? '#0D7377' : typ === 'feiertag' ? '#F59E0B' : '#DC2626';
+          const bgColor = typ === 'urlaub' ? '#F0FDFD' : typ === 'feiertag' ? '#FFFBEB' : '#FEF2F2';
 
           container.appendChild(el('h3', { style: { fontSize: '15px', margin: '0 0 12px', color: color, display: 'flex', alignItems: 'center', gap: '8px' } },
             el('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: color, display: 'inline-block' } }),
@@ -4235,6 +4319,7 @@
         body.appendChild(budgetEl);
         body.appendChild(urlaubListEl);
         body.appendChild(krankListEl);
+        body.appendChild(feiertagListEl);
         body.appendChild(el('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '8px' } },
           el('button', { className: 'btn-secondary', onClick: close }, 'Schließen')
         ));
@@ -5426,7 +5511,7 @@
 
           const blockRows = [];
           for (const b of blocks) {
-            const typeLabel = { urlaub: 'Urlaub', krank: 'Krank' }[b.typ] || b.typ;
+            const typeLabel = { urlaub: 'Urlaub', krank: 'Krank', feiertag: 'Feiertag (individuell)' }[b.typ] || b.typ;
             blockRows.push([typeLabel, `${formatDate(b.von)} – ${formatDate(b.bis)}`, b.notiz || '–']);
           }
           for (const f of feiertageInRange) {
