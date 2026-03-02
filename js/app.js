@@ -1276,7 +1276,8 @@
     function buildAbsenceBadge(ma, blockType, feiertage, dateStr) {
       const initials = getInitials(ma.name);
       const label = ABSENCE_LABELS[blockType] || '?';
-      const ftName = blockType === 'feiertag' ? getFeiertagName(dateStr, feiertage) : null;
+      let ftName = blockType === 'feiertag' ? getFeiertagName(dateStr, feiertage) : null;
+      if (!ftName && blockType === 'feiertag') { const b = findBlockierungForDay(ma, dateStr); if (b && b.notiz) ftName = b.notiz; }
       const tooltip = `${ma.name} – ${ABSENCE_LABELS_FULL[blockType] || blockType}${ftName ? ': ' + ftName : ''}`;
       return el('span', {
         className: `cal-absence-badge cal-absence-badge--${blockType}`,
@@ -1441,7 +1442,7 @@
           { label: 'Urlaub', value: mUrlaub, color: '#0D7377', icon: '\u2708' },
           { label: 'Krank', value: mKrank, color: '#DC2626', icon: '\u2716' },
         ];
-        if (freshMa.feiertagePflicht) summaryStats.push({ label: 'Feiertage', value: mFeiertag, color: '#F59E0B', icon: '\u2605' });
+        if (freshMa.feiertagePflicht || mFeiertag > 0) summaryStats.push({ label: 'Feiertage', value: mFeiertag, color: '#F59E0B', icon: '\u2605' });
         const summaryRow = el('div', { style: { display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' } });
         for (const s of summaryStats) {
           summaryRow.appendChild(el('div', { style: { flex: '1', minWidth: '120px', padding: '12px 16px', background: 'white', borderRadius: '8px', border: `1px solid ${s.color}20`, boxShadow: `0 1px 3px ${s.color}10` } },
@@ -1566,8 +1567,8 @@
           listCard.appendChild(el('h3', { style: { fontSize: '16px', margin: '0 0 12px', color: '#063838', fontFamily: "'DM Serif Display', serif" } }, 'Alle Blockierungen'));
           for (const b of allBlocks) {
             const days = CalcEngine.countWeekdays(b.von, b.bis);
-            const typeColor = b.typ === 'urlaub' ? '#0D7377' : '#DC2626';
-            const typeLabel = b.typ === 'urlaub' ? 'Urlaub' : 'Krank';
+            const typeColor = b.typ === 'urlaub' ? '#0D7377' : b.typ === 'feiertag' ? '#F59E0B' : '#DC2626';
+            const typeLabel = b.typ === 'urlaub' ? 'Urlaub' : b.typ === 'feiertag' ? 'Feiertag' : 'Krank';
             const row = el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #F1F5F9' } },
               el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
                 el('span', { style: { width: '8px', height: '8px', borderRadius: '50%', background: typeColor, flexShrink: '0' } }),
@@ -1629,7 +1630,7 @@
       const typLabel = blockierung.typ === 'urlaub' ? 'Urlaub' : blockierung.typ === 'feiertag' ? 'Feiertag' : 'Krank';
       const typColor = blockierung.typ === 'urlaub' ? '#0D7377' : blockierung.typ === 'feiertag' ? '#F59E0B' : '#DC2626';
       openModal('Blockierung Details', (body, close) => {
-        body.appendChild(el('div', { style: { padding: '16px', background: blockierung.typ === 'urlaub' ? '#F0FDFD' : '#FEF2F2', borderRadius: '8px', borderLeft: `3px solid ${typColor}`, marginBottom: '16px' } },
+        body.appendChild(el('div', { style: { padding: '16px', background: blockierung.typ === 'urlaub' ? '#F0FDFD' : blockierung.typ === 'feiertag' ? '#FFFBEB' : '#FEF2F2', borderRadius: '8px', borderLeft: `3px solid ${typColor}`, marginBottom: '16px' } },
           el('div', { style: { fontSize: '15px', fontWeight: '600', color: typColor } }, typLabel),
           el('div', { style: { fontSize: '14px', color: '#334155', marginTop: '6px' } }, `${formatDate(blockierung.von)} – ${formatDate(blockierung.bis)} (${days} Werktage)`),
           blockierung.notiz ? el('div', { style: { fontSize: '13px', color: '#64748B', marginTop: '4px', fontStyle: 'italic' } }, blockierung.notiz) : null
@@ -1820,7 +1821,9 @@
           legendItems.push({ color: colorMap[ma.id], label: ma.name });
         }
         if (legendItems.length > 0) {
-          legendItems.push({ color: '#DC2626', label: 'Blockiert (Urlaub/Krank/Feiertag)' });
+          legendItems.push({ color: '#0D7377', label: 'Urlaub' });
+          legendItems.push({ color: '#DC2626', label: 'Krank' });
+          legendItems.push({ color: '#F59E0B', label: 'Feiertag' });
         }
         container.appendChild(buildCalendarLegend(legendItems));
 
@@ -2156,7 +2159,11 @@
 
         // Legend
         const legendItems = employeeData.map(d => ({ color: colorMap[d.ma.id], label: `${d.ma.name} (${d.apProzent}%)` }));
-        if (legendItems.length > 0) legendItems.push({ color: '#DC2626', label: 'Blockiert (Urlaub/Krank/Feiertag)' });
+        if (legendItems.length > 0) {
+          legendItems.push({ color: '#0D7377', label: 'Urlaub' });
+          legendItems.push({ color: '#DC2626', label: 'Krank' });
+          legendItems.push({ color: '#F59E0B', label: 'Feiertag' });
+        }
         container.appendChild(buildCalendarLegend(legendItems));
 
         // Employee summary
@@ -3724,62 +3731,138 @@
       };
     }
 
-    // --- Externe Entwicklung (Backend-Dokumente) ---
+    // --- Externe Entwicklung (Externe Projekte / Aufträge) ---
     async function buildExterneEntwicklung(container, ueberProjektId, projektId) {
       const section = el('div', { style: { marginTop: '8px' } });
       const isEditable = AuthSystem.isAdmin() || (AuthSystem.getCurrentUser() && AuthSystem.getCurrentUser().role === 'editor');
+      const entries = DataStore.getExterneEntwicklungen(ueberProjektId, projektId);
 
-      // Header
+      // Fetch all backend documents for this projekt once
+      let allDocs = [];
+      try { allDocs = await DataStoreAPI.getDokumente(projektId) || []; } catch (_) {}
+
+      // --- Summary cards ---
+      if (entries.length > 0) {
+        const totalAuftragswert = entries.reduce((s, e) => s + (Number(e.auftragswert) || 0), 0);
+        const totalFoerdersumme = entries.reduce((s, e) => {
+          const wert = Number(e.auftragswert) || 0;
+          const quote = Number(e.foerderquote) || 0;
+          return s + (wert * quote / 100);
+        }, 0);
+        const activeCount = entries.filter(e => e.status === 'aktiv').length;
+
+        const summaryGrid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' } });
+        summaryGrid.appendChild(el('div', { style: { background: '#F0FDFD', borderRadius: '10px', padding: '16px', border: '1px solid #99F6E4' } },
+          el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#0D7377', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' } }, 'Aufträge'),
+          el('div', { style: { fontSize: '24px', fontWeight: '700', color: '#063838', fontFamily: '"DM Serif Display", serif' } }, `${entries.length}`),
+          el('div', { style: { fontSize: '12px', color: '#64748B' } }, `${activeCount} aktiv`)
+        ));
+        summaryGrid.appendChild(el('div', { style: { background: '#FEF3C7', borderRadius: '10px', padding: '16px', border: '1px solid #FDE68A' } },
+          el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' } }, 'Gesamt-Auftragswert'),
+          el('div', { style: { fontSize: '24px', fontWeight: '700', color: '#92400E', fontFamily: '"DM Serif Display", serif' } }, formatEuro(totalAuftragswert))
+        ));
+        summaryGrid.appendChild(el('div', { style: { background: '#F0FDF4', borderRadius: '10px', padding: '16px', border: '1px solid #BBF7D0' } },
+          el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#15803D', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' } }, 'Gesamt-Fördersumme'),
+          el('div', { style: { fontSize: '24px', fontWeight: '700', color: '#15803D', fontFamily: '"DM Serif Display", serif' } }, formatEuro(totalFoerdersumme))
+        ));
+        section.appendChild(summaryGrid);
+      }
+
+      // --- Header ---
       section.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
-        el('h2', { style: { fontSize: '18px', margin: '0', color: '#063838' } }, 'Externe Entwicklung'),
-        isEditable ? el('button', { className: 'btn-secondary', onClick: () => openDokumentUploadModal(projektId) }, '+ Dokument hochladen') : null
+        el('h2', { style: { fontSize: '18px', margin: '0', color: '#063838' } }, 'Externe Projekte / Aufträge'),
+        isEditable ? el('button', { className: 'btn-secondary', onClick: () => openExternesProjektModal(ueberProjektId, projektId, null, allDocs) }, '+ Neuer Auftrag') : null
       ));
 
-      try {
-        const docs = await DataStoreAPI.getDokumente(projektId);
+      // --- Empty state ---
+      if (entries.length === 0) {
+        section.appendChild(renderEmptyState(
+          'Keine externen Aufträge',
+          'Erstelle externe Projekte / Aufträge mit Vertragswert, Förderquote und Dokumenten.',
+          isEditable ? '+ Neuer Auftrag' : null,
+          isEditable ? () => openExternesProjektModal(ueberProjektId, projektId, null, allDocs) : null
+        ));
+      } else {
+        // --- Entry cards ---
+        for (const entry of entries) {
+          const wert = Number(entry.auftragswert) || 0;
+          const quote = Number(entry.foerderquote) || 0;
+          const foerdersumme = wert * quote / 100;
+          const entryDocs = (entry.dokumentIds || []).map(id => allDocs.find(d => d.id === id)).filter(Boolean);
+          const statusColors = { aktiv: { bg: '#F0FDF4', color: '#15803D' }, abgeschlossen: { bg: '#F0F9FF', color: '#0369A1' }, geplant: { bg: '#F8FAFC', color: '#64748B' } };
+          const sc = statusColors[entry.status] || statusColors.geplant;
+          const statusLabels = { aktiv: 'Aktiv', abgeschlossen: 'Abgeschlossen', geplant: 'Geplant' };
 
-        if (!docs || docs.length === 0) {
-          section.appendChild(renderEmptyState(
-            'Keine Dokumente',
-            'Lade PDF-Dokumente für externe Entwicklungsleistungen hoch.',
-            isEditable ? '+ Dokument hochladen' : null,
-            isEditable ? () => openDokumentUploadModal(projektId) : null
-          ));
-        } else {
-          const card = el('div', { className: 'card', style: { padding: '20px' } });
-          card.appendChild(el('div', { style: { marginBottom: '12px' } },
-            el('span', { style: { fontSize: '13px', color: '#64748B' } }, `${docs.length} Dokument${docs.length !== 1 ? 'e' : ''}`)
-          ));
+          const card = el('div', { className: 'card', style: { padding: '0', marginBottom: '12px', overflow: 'hidden' } });
 
-          const docList = el('div');
-          for (const doc of docs) {
-            const sizeStr = doc.size < 1024 * 1024
-              ? `${Math.round(doc.size / 1024)} KB`
-              : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
-            const dt = new Date(doc.createdAt);
-            const dateStr = `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
-            docList.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F1F5F9' } },
-              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
-                el('span', { style: { fontSize: '18px' } }, '\uD83D\uDCC4'),
-                el('div', null,
-                  el('span', { style: { fontSize: '14px', fontWeight: '500', color: '#334155', cursor: 'pointer', textDecoration: 'underline', textDecorationColor: '#CBD5E1' }, onClick: () => downloadBackendDocument(doc) }, doc.name),
-                  el('span', { style: { fontSize: '12px', color: '#94A3B8', marginLeft: '8px' } }, sizeStr),
-                  el('span', { style: { fontSize: '12px', color: '#94A3B8', marginLeft: '8px' } }, dateStr)
-                )
-              ),
-              el('div', { style: { display: 'flex', gap: '4px' } },
-                el('button', { className: 'btn-icon', style: { fontSize: '14px' }, onClick: () => downloadBackendDocument(doc), 'aria-label': 'Herunterladen' }, '\u2B07\uFE0F'),
-                isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => confirmDialog(`"${doc.name}" wirklich löschen?`, async () => { await DataStoreAPI.deleteDokument(doc.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon()) : null
-              )
+          // Card header
+          const cardHeader = el('div', { style: { padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #F1F5F9' } });
+          cardHeader.appendChild(el('div', { style: { flex: '1' } },
+            el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' } },
+              el('span', { style: { fontSize: '16px', fontWeight: '600', color: '#063838' } }, entry.name || 'Ohne Titel'),
+              el('span', { style: { fontSize: '11px', padding: '2px 8px', borderRadius: '999px', background: sc.bg, color: sc.color, fontWeight: '600' } }, statusLabels[entry.status] || 'Geplant')
+            ),
+            entry.auftragnehmer ? el('div', { style: { fontSize: '13px', color: '#64748B' } }, entry.auftragnehmer) : null
+          ));
+          if (isEditable) {
+            cardHeader.appendChild(el('div', { style: { display: 'flex', gap: '4px', flexShrink: '0' } },
+              el('button', { className: 'btn-icon', onClick: () => openExternesProjektModal(ueberProjektId, projektId, entry, allDocs), 'aria-label': 'Bearbeiten' }, '\u270F\uFE0F'),
+              el('button', { className: 'btn-icon', style: { color: '#DC2626' }, onClick: () => confirmDialog(`"${entry.name}" wirklich löschen?`, () => { DataStore.deleteExterneEntwicklung(ueberProjektId, projektId, entry.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
             ));
           }
-          card.appendChild(docList);
+          card.appendChild(cardHeader);
+
+          // Card body — key figures
+          const cardBody = el('div', { style: { padding: '16px 20px' } });
+          const figuresGrid = el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: entryDocs.length > 0 || entry.beschreibung ? '16px' : '0' } });
+          figuresGrid.appendChild(el('div', null,
+            el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' } }, 'Auftragswert'),
+            el('div', { style: { fontSize: '18px', fontWeight: '700', color: '#063838' } }, wert > 0 ? formatEuro(wert) : '\u2013')
+          ));
+          figuresGrid.appendChild(el('div', null,
+            el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' } }, 'Förderquote'),
+            el('div', { style: { fontSize: '18px', fontWeight: '700', color: '#0D7377' } }, quote > 0 ? `${quote} %` : '\u2013')
+          ));
+          figuresGrid.appendChild(el('div', null,
+            el('div', { style: { fontSize: '11px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '2px' } }, 'Fördersumme'),
+            el('div', { style: { fontSize: '18px', fontWeight: '700', color: '#15803D' } }, foerdersumme > 0 ? formatEuro(foerdersumme) : '\u2013')
+          ));
+          cardBody.appendChild(figuresGrid);
+
+          // Description
+          if (entry.beschreibung) {
+            cardBody.appendChild(el('div', { style: { fontSize: '13px', color: '#475569', marginBottom: entryDocs.length > 0 ? '16px' : '0', lineHeight: '1.5' } }, entry.beschreibung));
+          }
+
+          // Documents section
+          if (entryDocs.length > 0 || isEditable) {
+            const docsSection = el('div', { style: { borderTop: '1px solid #F1F5F9', paddingTop: '12px' } });
+            docsSection.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+              el('span', { style: { fontSize: '12px', fontWeight: '600', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' } }, `Dokumente (${entryDocs.length})`),
+              isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '12px', color: '#0D7377', fontWeight: '500' }, onClick: () => openExternDokumentUploadModal(ueberProjektId, projektId, entry) }, '+ Hinzufügen') : null
+            ));
+            for (const doc of entryDocs) {
+              const sizeStr = doc.size < 1024 * 1024 ? `${Math.round(doc.size / 1024)} KB` : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+              docsSection.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F8FAFC' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }, onClick: () => downloadBackendDocument(doc) },
+                  el('span', { style: { fontSize: '14px' } }, '\uD83D\uDCC4'),
+                  el('span', { style: { fontSize: '13px', fontWeight: '500', color: '#334155', textDecoration: 'underline', textDecorationColor: '#CBD5E1' } }, doc.name),
+                  el('span', { style: { fontSize: '11px', color: '#94A3B8', marginLeft: '4px' } }, sizeStr)
+                ),
+                isEditable ? el('button', { className: 'btn-icon', style: { fontSize: '12px', color: '#DC2626' }, onClick: () => confirmDialog(`"${doc.name}" entfernen?`, async () => {
+                  const updated = { ...entry, dokumentIds: (entry.dokumentIds || []).filter(id => id !== doc.id) };
+                  DataStore.saveExterneEntwicklung(ueberProjektId, projektId, updated);
+                  await DataStoreAPI.deleteDokument(doc.id);
+                  Router.resolve();
+                }), 'aria-label': 'Entfernen' }, trashIcon()) : null
+              ));
+            }
+            cardBody.appendChild(docsSection);
+          }
+
+          card.appendChild(cardBody);
           section.appendChild(card);
         }
-      } catch (e) {
-        section.appendChild(el('div', { className: 'card', style: { padding: '20px' } },
-          el('p', { style: { color: '#DC2626' } }, 'Fehler beim Laden der Dokumente: ' + e.message)
-        ));
       }
       container.appendChild(section);
     }
@@ -3800,8 +3883,171 @@
       }
     }
 
-    function openDokumentUploadModal(projektId) {
-      openModal('Dokument hochladen', (body, close) => {
+    // Modal: Create / Edit Externes Projekt
+    function openExternesProjektModal(ueberProjektId, projektId, existing, allDocs) {
+      const title = existing ? 'Auftrag bearbeiten' : 'Neuer externer Auftrag';
+      openModal(title, (body, close) => {
+        const nameInput = el('input', { className: 'form-input', placeholder: 'z.B. UI-Design Agentur XY', value: existing ? (existing.name || '') : '' });
+        const auftragnehmInput = el('input', { className: 'form-input', placeholder: 'z.B. Mustermann GmbH', value: existing ? (existing.auftragnehmer || '') : '' });
+        const wertInput = el('input', { className: 'form-input', type: 'number', placeholder: 'z.B. 50000', min: '0', step: '100', value: existing && existing.auftragswert ? existing.auftragswert : '' });
+        const quoteInput = el('input', { className: 'form-input', type: 'number', placeholder: 'z.B. 35', min: '0', max: '100', step: '1', value: existing && existing.foerderquote ? existing.foerderquote : '' });
+        const descInput = el('textarea', { className: 'form-input', rows: '3', placeholder: 'Beschreibung (optional)', style: { resize: 'vertical' } });
+        if (existing && existing.beschreibung) descInput.value = existing.beschreibung;
+        const statusSelect = el('select', { className: 'form-input' });
+        ['geplant', 'aktiv', 'abgeschlossen'].forEach(s => {
+          const opt = el('option', { value: s }, s === 'geplant' ? 'Geplant' : s === 'aktiv' ? 'Aktiv' : 'Abgeschlossen');
+          if (existing && existing.status === s) opt.selected = true;
+          else if (!existing && s === 'aktiv') opt.selected = true;
+          statusSelect.appendChild(opt);
+        });
+
+        // Calculated Fördersumme display
+        const foerderDisplay = el('div', { style: { fontSize: '13px', color: '#15803D', fontWeight: '600', marginTop: '4px', minHeight: '18px' } });
+        function updateFoerderDisplay() {
+          const w = Number(wertInput.value) || 0;
+          const q = Number(quoteInput.value) || 0;
+          const sum = w * q / 100;
+          foerderDisplay.textContent = w > 0 && q > 0 ? `= ${formatEuro(sum)} Fördersumme` : '';
+        }
+        wertInput.addEventListener('input', updateFoerderDisplay);
+        quoteInput.addEventListener('input', updateFoerderDisplay);
+
+        // Form layout
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Name / Bezeichnung *'), nameInput));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Auftragnehmer / Dienstleister'), auftragnehmInput));
+        body.appendChild(el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' } },
+          el('div', null, el('label', { className: 'form-label' }, 'Auftragswert (EUR)'), wertInput),
+          el('div', null, el('label', { className: 'form-label' }, 'Förderquote (%)'), quoteInput, foerderDisplay)
+        ));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Status'), statusSelect));
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Beschreibung'), descInput));
+
+        updateFoerderDisplay();
+
+        // File upload zone
+        const fileInput = el('input', { type: 'file', accept: '.pdf', multiple: true, style: { display: 'none' } });
+        let selectedFiles = [];
+        let existingDocIds = existing ? [...(existing.dokumentIds || [])] : [];
+        const existingDocs = existingDocIds.map(id => (allDocs || []).find(d => d.id === id)).filter(Boolean);
+
+        const fileSection = el('div', { style: { marginBottom: '16px' } });
+        fileSection.appendChild(el('label', { className: 'form-label' }, 'Dokumente'));
+
+        const fileListContainer = el('div', { style: { marginBottom: '8px' } });
+        function renderFileList() {
+          fileListContainer.innerHTML = '';
+          for (const doc of existingDocs) {
+            if (!existingDocIds.includes(doc.id)) continue;
+            const sizeStr = doc.size < 1024 * 1024 ? `${Math.round(doc.size / 1024)} KB` : `${(doc.size / (1024 * 1024)).toFixed(1)} MB`;
+            fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: '#F0FDF4', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, doc.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr)
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { existingDocIds = existingDocIds.filter(id => id !== doc.id); renderFileList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+          for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            const sizeStr = file.size < 1024 * 1024 ? `${Math.round(file.size / 1024)} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            const idx = i;
+            fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '4px' } },
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                el('span', null, '\uD83D\uDCC4'),
+                el('span', { style: { fontSize: '14px', color: '#334155' } }, file.name),
+                el('span', { style: { fontSize: '12px', color: '#94A3B8' } }, sizeStr),
+                el('span', { style: { fontSize: '10px', color: '#0D7377', background: '#F0FDFD', padding: '1px 6px', borderRadius: '4px' } }, 'Neu')
+              ),
+              el('button', { className: 'btn-icon', style: { fontSize: '14px', color: '#DC2626' }, onClick: () => { selectedFiles.splice(idx, 1); renderFileList(); }, 'aria-label': 'Entfernen' }, '\u2716')
+            ));
+          }
+        }
+        fileSection.appendChild(fileListContainer);
+
+        const uploadZone = el('div', {
+          style: { border: '2px dashed #CBD5E1', borderRadius: '10px', padding: '16px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' },
+          onClick: () => fileInput.click(),
+        },
+          el('p', { style: { fontSize: '13px', color: '#475569', margin: '0 0 2px' } }, 'PDF-Dateien hier ablegen oder klicken'),
+          el('p', { style: { fontSize: '11px', color: '#94A3B8', margin: '0' } }, 'Nur PDF, max. 5 MB pro Datei')
+        );
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#0D7377'; uploadZone.style.background = '#F0FDFD'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; });
+        uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; addFiles(e.dataTransfer.files); });
+        fileInput.addEventListener('change', (e) => { addFiles(e.target.files); fileInput.value = ''; });
+
+        function addFiles(files) {
+          for (const file of files) {
+            if (file.type !== 'application/pdf') { alert(`"${file.name}" ist keine PDF-Datei.`); continue; }
+            if (file.size > 5 * 1024 * 1024) { alert(`"${file.name}" ist zu groß (max. 5 MB).`); continue; }
+            selectedFiles.push(file);
+          }
+          renderFileList();
+        }
+        fileSection.appendChild(uploadZone);
+        fileSection.appendChild(fileInput);
+        body.appendChild(fileSection);
+        renderFileList();
+
+        // Status message
+        const statusEl = el('div', { style: { display: 'none', padding: '8px', fontSize: '13px', color: '#0D7377', marginTop: '8px' } });
+        body.appendChild(statusEl);
+
+        // Buttons
+        body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' } },
+          el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
+          el('button', { className: 'btn-primary', onClick: async () => {
+            const name = nameInput.value.trim();
+            if (!name) { alert('Bitte einen Namen eingeben.'); nameInput.focus(); return; }
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Speichere...';
+
+            try {
+              // Upload new files
+              const newDocIds = [];
+              for (let i = 0; i < selectedFiles.length; i++) {
+                statusEl.textContent = `Lade Datei ${i + 1}/${selectedFiles.length} hoch...`;
+                const result = await DataStoreAPI.uploadDokument(projektId, selectedFiles[i]);
+                if (result && result.id) newDocIds.push(result.id);
+              }
+
+              // Delete removed existing docs from backend
+              if (existing) {
+                const removedIds = (existing.dokumentIds || []).filter(id => !existingDocIds.includes(id));
+                for (const id of removedIds) {
+                  try { await DataStoreAPI.deleteDokument(id); } catch (_) {}
+                }
+              }
+
+              const entry = {
+                id: existing ? existing.id : ('ee-' + crypto.randomUUID()),
+                name,
+                auftragnehmer: auftragnehmInput.value.trim(),
+                auftragswert: Number(wertInput.value) || 0,
+                foerderquote: Number(quoteInput.value) || 0,
+                status: statusSelect.value,
+                beschreibung: descInput.value.trim(),
+                dokumentIds: [...existingDocIds, ...newDocIds],
+                createdAt: existing ? existing.createdAt : new Date().toISOString(),
+              };
+
+              DataStore.saveExterneEntwicklung(ueberProjektId, projektId, entry);
+              close();
+              Router.resolve();
+            } catch (e) {
+              statusEl.style.color = '#DC2626';
+              statusEl.textContent = 'Fehler: ' + e.message;
+            }
+          }}, existing ? 'Speichern' : 'Erstellen')
+        ));
+      });
+    }
+
+    // Modal: Add documents to an existing Externes Projekt
+    function openExternDokumentUploadModal(ueberProjektId, projektId, entry) {
+      openModal('Dokumente hinzufügen', (body, close) => {
         const fileInput = el('input', { type: 'file', accept: '.pdf', multiple: true, style: { display: 'none' } });
         let selectedFiles = [];
 
@@ -3812,9 +4058,7 @@
           fileListContainer.appendChild(el('label', { className: 'form-label', style: { marginBottom: '8px' } }, 'Ausgewählte Dateien'));
           for (let i = 0; i < selectedFiles.length; i++) {
             const file = selectedFiles[i];
-            const sizeStr = file.size < 1024 * 1024
-              ? `${Math.round(file.size / 1024)} KB`
-              : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            const sizeStr = file.size < 1024 * 1024 ? `${Math.round(file.size / 1024)} KB` : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
             const idx = i;
             fileListContainer.appendChild(el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#F8FAFC', borderRadius: '8px', marginBottom: '4px' } },
               el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
@@ -3828,7 +4072,6 @@
         }
         body.appendChild(fileListContainer);
 
-        // Upload zone
         const uploadZone = el('div', {
           style: { border: '2px dashed #CBD5E1', borderRadius: '12px', padding: '24px', textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' },
           onClick: () => fileInput.click(),
@@ -3837,16 +4080,9 @@
           el('p', { style: { fontSize: '14px', color: '#475569', margin: '0 0 4px' } }, 'PDF-Dateien hier ablegen oder klicken'),
           el('p', { style: { fontSize: '12px', color: '#94A3B8', margin: '0' } }, 'Nur PDF, max. 5 MB pro Datei')
         );
-
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#0D7377'; uploadZone.style.background = '#F0FDFD'; });
         uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; });
-        uploadZone.addEventListener('drop', (e) => {
-          e.preventDefault();
-          uploadZone.style.borderColor = '#CBD5E1';
-          uploadZone.style.background = '';
-          addFiles(e.dataTransfer.files);
-        });
-
+        uploadZone.addEventListener('drop', (e) => { e.preventDefault(); uploadZone.style.borderColor = '#CBD5E1'; uploadZone.style.background = ''; addFiles(e.dataTransfer.files); });
         fileInput.addEventListener('change', (e) => { addFiles(e.target.files); fileInput.value = ''; });
 
         function addFiles(files) {
@@ -3870,10 +4106,14 @@
             if (selectedFiles.length === 0) { alert('Bitte mindestens eine Datei auswählen.'); return; }
             statusEl.style.display = 'block';
             try {
+              const newDocIds = [];
               for (let i = 0; i < selectedFiles.length; i++) {
                 statusEl.textContent = `Lade ${i + 1}/${selectedFiles.length} hoch...`;
-                await DataStoreAPI.uploadDokument(projektId, selectedFiles[i]);
+                const result = await DataStoreAPI.uploadDokument(projektId, selectedFiles[i]);
+                if (result && result.id) newDocIds.push(result.id);
               }
+              const updated = { ...entry, dokumentIds: [...(entry.dokumentIds || []), ...newDocIds] };
+              DataStore.saveExterneEntwicklung(ueberProjektId, projektId, updated);
               close();
               Router.resolve();
             } catch (e) {
