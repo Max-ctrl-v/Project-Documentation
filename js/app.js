@@ -1280,20 +1280,19 @@
       return (name || '?').slice(0, 2).toUpperCase();
     }
 
-    const ABSENCE_LABELS = { urlaub: 'U', krank: 'K', feiertag: 'F' };
-    const ABSENCE_COLORS = { urlaub: '#0D7377', krank: '#DC2626', feiertag: '#F59E0B' };
+    const ABSENCE_ICONS = { urlaub: '✈', krank: '✕', feiertag: '★' };
+    const ABSENCE_COLORS = { urlaub: '#0D7377', krank: '#DC2626', feiertag: '#D97706' };
     const ABSENCE_LABELS_FULL = { urlaub: 'Urlaub', krank: 'Krank', feiertag: 'Feiertag' };
 
     function buildAbsenceBadge(ma, blockType, feiertage, dateStr) {
-      const initials = getInitials(ma.name);
-      const label = ABSENCE_LABELS[blockType] || '?';
+      const icon = ABSENCE_ICONS[blockType] || '?';
       let ftName = blockType === 'feiertag' ? getFeiertagName(dateStr, feiertage) : null;
       if (!ftName && blockType === 'feiertag') { const b = findBlockierungForDay(ma, dateStr); if (b && b.notiz) ftName = b.notiz; }
       const tooltip = `${ma.name} – ${ABSENCE_LABELS_FULL[blockType] || blockType}${ftName ? ': ' + ftName : ''}`;
       return el('span', {
         className: `cal-absence-badge cal-absence-badge--${blockType}`,
         title: tooltip,
-      }, `${initials}·${label}`);
+      }, icon);
     }
 
     // --- Range Selection State Machine ---
@@ -1384,23 +1383,18 @@
         if (!freshMa) return;
         const budget = getUrlaubstageBudget(maId, curYear);
 
-        // Load AP assignments for this employee
+        // Load project assignments for this employee (one per project, not per AP)
         const maZuweisungen = DataStore.getZuweisungenForMitarbeiter(maId);
-        const apColorMap = {};
-        const apNameMap = {};
-        let apColorIdx = 0;
+        const projektColorMap = {};
+        const projektNameMap = {};
+        let projektColorIdx = 0;
         for (const zw of maZuweisungen) {
+          if (projektColorMap[zw.projektId]) continue;
           const found = DataStore.findProjektWithParent(zw.projektId);
           if (!found) continue;
-          const allAps = flattenAPs(found.projekt.arbeitspakete);
-          for (const av of (zw.arbeitspaketVerteilung || [])) {
-            if (!apColorMap[av.arbeitspaketId]) {
-              const apObj = allAps.find(a => a.id === av.arbeitspaketId);
-              apColorMap[av.arbeitspaketId] = AP_PALETTE[apColorIdx % AP_PALETTE.length];
-              apNameMap[av.arbeitspaketId] = apObj ? apObj.name : 'Unbekannt';
-              apColorIdx++;
-            }
-          }
+          projektColorMap[zw.projektId] = AP_PALETTE[projektColorIdx % AP_PALETTE.length];
+          projektNameMap[zw.projektId] = found.projekt.name;
+          projektColorIdx++;
         }
 
         // Breadcrumb
@@ -1507,16 +1501,13 @@
               wrap.appendChild(el('span', { className: 'cal-day-label' }, b && b.notiz ? b.notiz : 'Krank'));
               return wrap;
             }
-            // Free workday: show AP assignment dots
+            // Free workday: show one dot per project
             if (typ === 'frei') {
               const dots = [];
               for (const zw of maZuweisungen) {
                 if (ds < zw.von || ds > zw.bis) continue;
-                for (const av of (zw.arbeitspaketVerteilung || [])) {
-                  if (apColorMap[av.arbeitspaketId]) {
-                    dots.push(el('span', { className: 'cal-dot', style: { background: apColorMap[av.arbeitspaketId] }, title: `${apNameMap[av.arbeitspaketId]} (${av.prozentAnteil}%)` }));
-                  }
-                }
+                if (!projektColorMap[zw.projektId]) continue;
+                dots.push(el('span', { className: 'cal-dot', style: { background: projektColorMap[zw.projektId] }, title: `${projektNameMap[zw.projektId]} (${zw.prozentAnteil}%)` }));
               }
               if (dots.length > 0) return el('div', { className: 'cal-day-dots' }, ...dots);
             }
@@ -1531,11 +1522,7 @@
               const lines = [];
               for (const zw of maZuweisungen) {
                 if (ds < zw.von || ds > zw.bis) continue;
-                const found = DataStore.findProjektWithParent(zw.projektId);
-                const projName = found ? found.projekt.name : '?';
-                for (const av of (zw.arbeitspaketVerteilung || [])) {
-                  lines.push(`${projName}: ${apNameMap[av.arbeitspaketId] || '?'} (${av.prozentAnteil}%)`);
-                }
+                lines.push(`${projektNameMap[zw.projektId] || '?'} (${zw.prozentAnteil}%)`);
               }
               return lines.length > 0 ? lines.join('\n') : 'Arbeitstag (keine Zuweisung)';
             }
@@ -1559,15 +1546,15 @@
 
         // Legend
         const legendItems = [
-          { color: '#10B981', label: 'Arbeitstag', icon: '\u2714' },
-          { color: '#0D7377', label: 'Urlaub', icon: '\u2708' },
-          { color: '#DC2626', label: 'Krank', icon: '\u2716' },
+          { color: '#10B981', label: 'Arbeitstag' },
+          { color: '#39FF14', label: 'Urlaub' },
+          { color: '#FF073A', label: 'Krank' },
         ];
         const hasCustomFeiertage = (freshMa.blockierungen || []).some(b => b.typ === 'feiertag');
-        if (freshMa.feiertagePflicht || hasCustomFeiertage) legendItems.push({ color: '#F59E0B', label: 'Feiertag', icon: '\u2605' });
+        if (freshMa.feiertagePflicht || hasCustomFeiertage) legendItems.push({ color: '#DFFF00', label: 'Feiertag' });
         legendItems.push({ color: '#F1F5F9', label: 'Wochenende' });
-        for (const apId of Object.keys(apColorMap)) {
-          legendItems.push({ color: apColorMap[apId], label: apNameMap[apId] });
+        for (const pId of Object.keys(projektColorMap)) {
+          legendItems.push({ color: projektColorMap[pId], label: projektNameMap[pId] });
         }
         container.appendChild(buildCalendarLegend(legendItems));
 
@@ -1833,9 +1820,9 @@
           legendItems.push({ color: colorMap[ma.id], label: ma.name });
         }
         if (legendItems.length > 0) {
-          legendItems.push({ color: '#0D7377', label: 'Urlaub' });
-          legendItems.push({ color: '#DC2626', label: 'Krank' });
-          legendItems.push({ color: '#F59E0B', label: 'Feiertag' });
+          legendItems.push({ color: '#0D7377', label: '✈ Urlaub' });
+          legendItems.push({ color: '#DC2626', label: '✕ Krank' });
+          legendItems.push({ color: '#D97706', label: '★ Feiertag' });
         }
         container.appendChild(buildCalendarLegend(legendItems));
 
@@ -2172,9 +2159,9 @@
         // Legend
         const legendItems = employeeData.map(d => ({ color: colorMap[d.ma.id], label: `${d.ma.name} (${d.apProzent}%)` }));
         if (legendItems.length > 0) {
-          legendItems.push({ color: '#0D7377', label: 'Urlaub' });
-          legendItems.push({ color: '#DC2626', label: 'Krank' });
-          legendItems.push({ color: '#F59E0B', label: 'Feiertag' });
+          legendItems.push({ color: '#0D7377', label: '✈ Urlaub' });
+          legendItems.push({ color: '#DC2626', label: '✕ Krank' });
+          legendItems.push({ color: '#D97706', label: '★ Feiertag' });
         }
         container.appendChild(buildCalendarLegend(legendItems));
 

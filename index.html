@@ -339,12 +339,12 @@
     .cal-day--weekend { background: #F8FAFB; cursor: default; }
     .cal-day--weekend:hover { background: #F8FAFB; transform: none; }
     .cal-day--today { box-shadow: inset 0 0 0 2px #0D7377; }
-    .cal-day--urlaub { background: linear-gradient(135deg, rgba(13,115,119,0.13) 0%, rgba(43,200,196,0.08) 100%); border-left: 3px solid #0D7377; }
-    .cal-day--urlaub:hover { background: linear-gradient(135deg, rgba(13,115,119,0.22) 0%, rgba(43,200,196,0.14) 100%); }
-    .cal-day--krank { background: repeating-linear-gradient(135deg, rgba(220,38,38,0.05), rgba(220,38,38,0.05) 4px, rgba(220,38,38,0.12) 4px, rgba(220,38,38,0.12) 8px); border-left: 3px solid #DC2626; }
-    .cal-day--krank:hover { background: repeating-linear-gradient(135deg, rgba(220,38,38,0.10), rgba(220,38,38,0.10) 4px, rgba(220,38,38,0.20) 4px, rgba(220,38,38,0.20) 8px); }
-    .cal-day--feiertag { background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(251,191,36,0.06) 100%); border-left: 3px solid #F59E0B; }
-    .cal-day--feiertag:hover { background: linear-gradient(135deg, rgba(245,158,11,0.22) 0%, rgba(251,191,36,0.12) 100%); }
+    .cal-day--urlaub { background: #39FF14; border-left: 3px solid #2BD60F; }
+    .cal-day--urlaub:hover { background: #45FF28; }
+    .cal-day--krank { background: #FF073A; border-left: 3px solid #E0062F; }
+    .cal-day--krank:hover { background: #FF1A4D; }
+    .cal-day--feiertag { background: #DFFF00; border-left: 3px solid #C8E600; }
+    .cal-day--feiertag:hover { background: #E5FF1A; }
     .cal-day--working { background: rgba(16,185,129,0.06); }
     .cal-day--working:hover { background: rgba(16,185,129,0.12); }
     .cal-day--selected { background: rgba(13,115,119,0.18); box-shadow: inset 0 0 0 2px #2BC8C4; }
@@ -354,21 +354,21 @@
     .cal-day--project-end { border-right: 3px solid #0D7377; }
     .cal-day-number { font-size: 13px; font-weight: 500; color: #334155; line-height: 1; display: block; }
     .cal-day--weekend .cal-day-number { color: #94A3B8; }
-    .cal-day--urlaub .cal-day-number { font-weight: 600; color: #0A5C5F; }
-    .cal-day--krank .cal-day-number { font-weight: 600; color: #B91C1C; }
-    .cal-day--feiertag .cal-day-number { font-weight: 600; color: #92400E; }
+    .cal-day--urlaub .cal-day-number { font-weight: 700; color: #064E0A; }
+    .cal-day--krank .cal-day-number { font-weight: 700; color: #FFFFFF; }
+    .cal-day--feiertag .cal-day-number { font-weight: 700; color: #4A4A00; }
     .cal-day-icon { position: absolute; top: 4px; right: 5px; font-size: 12px; line-height: 1; opacity: 0.7; }
     .cal-day-label { font-size: 9px; color: #64748B; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; display: block; }
-    .cal-day--urlaub .cal-day-label { color: #0D7377; font-weight: 600; }
-    .cal-day--krank .cal-day-label { color: #DC2626; font-weight: 600; }
-    .cal-day--feiertag .cal-day-label { color: #B45309; font-weight: 600; }
+    .cal-day--urlaub .cal-day-label { color: #064E0A; font-weight: 700; }
+    .cal-day--krank .cal-day-label { color: #FFFFFF; font-weight: 700; }
+    .cal-day--feiertag .cal-day-label { color: #4A4A00; font-weight: 700; }
     .cal-day-dots { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; }
     .cal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .cal-dot--blocked { opacity: 0.4; }
-    .cal-absence-badge { display: inline-flex; align-items: center; gap: 2px; font-size: 8px; font-weight: 700; line-height: 1; padding: 1.5px 4px; border-radius: 3px; white-space: nowrap; letter-spacing: 0.01em; max-width: 100%; overflow: hidden; }
-    .cal-absence-badge--urlaub { background: rgba(13,115,119,0.14); color: #0A5C5F; border: 1px solid rgba(13,115,119,0.25); }
-    .cal-absence-badge--krank { background: rgba(220,38,38,0.10); color: #B91C1C; border: 1px solid rgba(220,38,38,0.22); }
-    .cal-absence-badge--feiertag { background: rgba(245,158,11,0.12); color: #92400E; border: 1px solid rgba(245,158,11,0.25); }
+    .cal-absence-badge { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 9px; font-weight: 700; line-height: 1; padding: 0; border-radius: 50%; flex-shrink: 0; cursor: default; }
+    .cal-absence-badge--urlaub { background: rgba(13,115,119,0.18); color: #0D7377; border: 1.5px solid rgba(13,115,119,0.35); }
+    .cal-absence-badge--krank { background: rgba(220,38,38,0.14); color: #DC2626; border: 1.5px solid rgba(220,38,38,0.30); }
+    .cal-absence-badge--feiertag { background: rgba(217,119,6,0.14); color: #D97706; border: 1.5px solid rgba(217,119,6,0.30); }
     .cal-day--has-block { background: rgba(220,38,38,0.07); }
     .cal-day--has-block .cal-day-number { color: #DC2626; font-weight: 600; }
     .cal-day--all-blocked { background: rgba(220,38,38,0.12); border-left: 3px solid #DC2626; }
