@@ -178,6 +178,14 @@
         }
 
         // ── Fallback: load seed data and allow access (offline mode) ──
+        // Security: Only allow offline fallback on localhost (development)
+        const isLocal = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+        if (!isLocal) {
+          errorEl.textContent = 'Server nicht erreichbar. Bitte versuchen Sie es später erneut.';
+          errorEl.style.display = 'block';
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
+          return;
+        }
         await this._loadSeedIfEmpty();
         sessionStorage.setItem(this._sessionKey, JSON.stringify({
           email, name: email.split('@')[0], role: 'viewer',
@@ -732,7 +740,10 @@
         const wochenTage = Number(ma.wochenStunden || 40) / 8;
         const basisTage = Math.round(wochenTage * 52);
         const urlaubsTage = ma.jahresUrlaub || 30;
-        const feiertagCount = ma.feiertagePflicht ? DataStore.getFeiertage().length : 0;
+        const currentYear = new Date().getFullYear().toString();
+        const feiertagCount = ma.feiertagePflicht
+          ? DataStore.getFeiertage().filter(f => f.datum && f.datum.startsWith(currentYear)).length
+          : 0;
         const arbeitsTage = Math.max(basisTage - urlaubsTage - feiertagCount, 1);
         return totalCost / arbeitsTage;
       },
@@ -1614,7 +1625,7 @@
             onClick: () => { addBlockierungToMA(ma.id, 'krank', von, bis, notizInput.value.trim()); close(); refreshFn(); }
           }, 'Krank'),
           el('button', {
-            style: { padding: '8px 20px', borderRadius: '8px', border: 'none', color: 'white', background: '#F59E0B', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
+            style: { padding: '8px 20px', borderRadius: '8px', border: 'none', color: '#78350F', background: '#F59E0B', cursor: 'pointer', fontWeight: '600', fontSize: '14px' },
             onClick: () => { addBlockierungToMA(ma.id, 'feiertag', von, bis, notizInput.value.trim()); close(); refreshFn(); }
           }, 'Feiertag'),
           el('button', {
@@ -1655,6 +1666,7 @@
     function addBlockierungToMA(maId, typ, von, bis, notiz) {
       const curr = DataStore.getMitarbeiterById(maId);
       if (!curr) return;
+      if (!von || !bis || von > bis) return;
       if (!curr.blockierungen) curr.blockierungen = [];
       curr.blockierungen.push({ id: crypto.randomUUID(), typ, von, bis, notiz: notiz || '' });
       DataStore.saveMitarbeiter(curr);

@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import { readFile } from 'fs/promises';
-import { extname, join } from 'path';
+import { extname, join, resolve, normalize } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -29,7 +29,14 @@ createServer(async (req, res) => {
   let path = req.url.split('?')[0];
   if (path === '/') path = '/index.html';
 
-  const filePath = join(__dirname, path);
+  // Prevent path traversal: normalize and verify the path stays within __dirname
+  const filePath = resolve(__dirname, '.' + normalize(path));
+  if (!filePath.startsWith(__dirname)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
+  }
+
   const ext = extname(filePath);
 
   try {
