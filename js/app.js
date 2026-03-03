@@ -4845,7 +4845,15 @@
               )
             ),
             el('div', { style: { display: 'flex', gap: '4px' } },
-              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openExportDialog('mitarbeiter', ma.id, { von: jahr + '-01-01', bis: jahr + '-12-31' }) }, 'PDF'),
+              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => {
+                const zws = DataStore.getZuweisungenForMitarbeiter(ma.id);
+                let von = jahr + '-01-01', bis = jahr + '-12-31';
+                if (zws.length > 0) {
+                  von = zws.reduce((m, z) => z.von < m ? z.von : m, zws[0].von);
+                  bis = zws.reduce((m, z) => z.bis > m ? z.bis : m, zws[0].bis);
+                }
+                openExportDialog('mitarbeiter', ma.id, { von, bis });
+              }}, 'PDF'),
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => Router.navigate(`#/mitarbeiter-kalender/${ma.id}`) }, 'Kalender'),
               el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Abwesenheiten'),
               el('button', { className: 'btn-icon', onClick: () => openMitarbeiterModal(ma), 'aria-label': 'Bearbeiten' }, '\u270E'),
