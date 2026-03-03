@@ -5449,23 +5449,22 @@
         const dateStr = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
         const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
 
-        // Header on every page — gradient effect
+        // Header on every page — navy gradient (Novaris brand)
         const addHeader = () => {
-          // Gradient from dark teal to lighter teal
           const gradSteps = 20;
           const barH = 28;
           for (let i = 0; i < gradSteps; i++) {
             const t = i / gradSteps;
-            const r = Math.round(6 + t * (15 - 6));
-            const g = Math.round(56 + t * (168 - 56));
-            const b = Math.round(56 + t * (163 - 56));
+            const r = Math.round(13 + t * (30 - 13));
+            const g = Math.round(27 + t * (64 - 27));
+            const b = Math.round(62 + t * (128 - 62));
             doc.setFillColor(r, g, b);
             doc.rect(0, (barH * i) / gradSteps, pageWidth, barH / gradSteps + 0.5, 'F');
           }
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(16);
           doc.setTextColor(255, 255, 255);
-          doc.text('Novarix', 14, 13);
+          doc.text('NOVARIX', 14, 13);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
           doc.text(title, 14, 21);
@@ -5495,7 +5494,7 @@
         doc.addPage();
         let y = 30;
         doc.setFontSize(14);
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text('Verfahrensdokumentation (GoBD)', 14, y);
         y += 10;
         doc.setFontSize(9);
@@ -5551,7 +5550,7 @@
         // Project info
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text('Projektinformationen', 14, y); y += 8;
 
         doc.setFontSize(9);
@@ -5578,7 +5577,7 @@
         if (aps.length > 0) {
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(6, 56, 56);
+          doc.setTextColor(13, 27, 62);
           doc.text('PLAN ITEMS', 14, y); y += 2;
 
           // Build numbering map (1, 1.1, 1.2, 2, ...)
@@ -5612,15 +5611,15 @@
 
           // Status colors for bars
           const pdfStatusColors = {
-            aktiv: [13, 115, 119],
-            in_bearbeitung: [13, 115, 119],
+            aktiv: [30, 86, 181],
+            in_bearbeitung: [30, 86, 181],
             abgeschlossen: [100, 116, 139],
             offen: [217, 119, 6],
             geplant: [217, 119, 6],
           };
           const pdfStatusColorsLight = {
-            aktiv: [15, 168, 163],
-            in_bearbeitung: [15, 168, 163],
+            aktiv: [58, 127, 212],
+            in_bearbeitung: [58, 127, 212],
             abgeschlossen: [148, 163, 184],
             offen: [245, 158, 11],
             geplant: [245, 158, 11],
@@ -5632,7 +5631,7 @@
 
           // --- Draw timeline header (month labels) ---
           const hdrY = y;
-          doc.setFillColor(240, 253, 253);
+          doc.setFillColor(235, 246, 254);
           doc.rect(ganttLeft, hdrY, ganttWidth, headerHeight, 'F');
           doc.setDrawColor(226, 232, 240);
           doc.line(ganttLeft, hdrY, ganttLeft + ganttWidth, hdrY);
@@ -5677,7 +5676,7 @@
               // Re-offset for remaining rows on new page
               const remaining = flatAps.length - i;
               // Redraw header on new page
-              doc.setFillColor(240, 253, 253);
+              doc.setFillColor(235, 246, 254);
               doc.rect(ganttLeft, y, ganttWidth, headerHeight, 'F');
               doc.setFontSize(7);
               doc.setFont('helvetica', 'bold');
@@ -5705,7 +5704,7 @@
 
             // Alternating row background
             if (i % 2 === 0) {
-              doc.setFillColor(250, 252, 252);
+              doc.setFillColor(245, 248, 254);
               doc.rect(leftMargin, rowY, pageWidth - leftMargin - rightMargin, rowHeight, 'F');
             }
 
@@ -5726,7 +5725,7 @@
             doc.setFontSize(6);
             doc.setFont('helvetica', 'bold');
             if (depth === 0) {
-              doc.setFillColor(13, 115, 119);
+              doc.setFillColor(30, 86, 181);
               doc.roundedRect(leftMargin + 1 + indent, rowY + 1.5, 5 + apNum.length * 1.8, 4, 1, 1, 'F');
               doc.setTextColor(255, 255, 255);
               doc.text(apNum, leftMargin + 2.5 + indent, rowY + 4.3);
@@ -5821,7 +5820,7 @@
           // Project start marker (subtle line)
           const projStartOffset = 0;
           const projStartX = ganttLeft;
-          doc.setDrawColor(13, 115, 119);
+          doc.setDrawColor(30, 86, 181);
           doc.setLineWidth(0.2);
           doc.line(projStartX, ganttBodyTop, projStartX, ganttBodyBottom);
           doc.setLineWidth(0.2);
@@ -5864,7 +5863,7 @@
           if (y > 240) { doc.addPage(); y = 36; }
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(6, 56, 56);
+          doc.setTextColor(13, 27, 62);
           doc.text('Mitarbeiter-Zuweisungen', 14, y); y += 6;
 
           const zwRows = [];
@@ -5887,8 +5886,8 @@
             head: [['Mitarbeiter', 'Anteil', 'Zeitraum', 'Werktage', 'Blockiert', 'Verfügbar', 'Proj.-Tage']],
             body: zwRows,
             styles: { fontSize: 7.5, cellPadding: 2.5, font: 'helvetica' },
-            headStyles: { fillColor: [13, 115, 119], textColor: 255, fontStyle: 'bold' },
-            alternateRowStyles: { fillColor: [240, 253, 253] },
+            headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [235, 246, 254] },
             margin: { left: 14, right: 14 },
           });
           y = doc.lastAutoTable.finalY + 10;
@@ -5912,8 +5911,8 @@
                 head: [['Arbeitspaket', 'Anteil', 'Tage']],
                 body: apRows,
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-                headStyles: { fillColor: [15, 168, 163], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [240, 253, 253] },
+                headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [235, 246, 254] },
                 margin: { left: 20, right: 14 },
               });
               y = doc.lastAutoTable.finalY + 6;
@@ -5952,7 +5951,7 @@
         // Project header
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text(p.name, 14, y); y += 6;
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
@@ -5988,7 +5987,7 @@
 
         // Timeline header
         const hdrY = y;
-        doc.setFillColor(240, 253, 253);
+        doc.setFillColor(235, 246, 254);
         doc.rect(ganttLeft, hdrY, ganttWidth, headerHeight, 'F');
         doc.setDrawColor(226, 232, 240);
         doc.line(ganttLeft, hdrY, ganttLeft + ganttWidth, hdrY);
@@ -6018,7 +6017,7 @@
           const rowY = y + i * rowHeight;
           if (rowY + rowHeight > 270) {
             doc.addPage(); y = 36;
-            doc.setFillColor(240, 253, 253); doc.rect(ganttLeft, y, ganttWidth, headerHeight, 'F');
+            doc.setFillColor(235, 246, 254); doc.rect(ganttLeft, y, ganttWidth, headerHeight, 'F');
             doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(100, 116, 139);
             doc.text('Arbeitspaket', leftMargin + 2, y + 6);
             doc.setFontSize(6); doc.setFont('helvetica', 'normal');
@@ -6038,14 +6037,14 @@
           const depth = ap._depth || 0;
           const indent = depth * 4;
           const apNum = pdfNumMap[ap.id] || '';
-          if (i % 2 === 0) { doc.setFillColor(250, 252, 252); doc.rect(leftMargin, rowY, pageWidth - leftMargin - rightMargin, rowHeight, 'F'); }
+          if (i % 2 === 0) { doc.setFillColor(245, 248, 254); doc.rect(leftMargin, rowY, pageWidth - leftMargin - rightMargin, rowHeight, 'F'); }
           doc.setDrawColor(241, 245, 249); doc.line(leftMargin, rowY + rowHeight, leftMargin + pageWidth - leftMargin - rightMargin, rowY + rowHeight);
           doc.setDrawColor(226, 232, 240); doc.line(ganttLeft, rowY, ganttLeft, rowY + rowHeight);
 
           // Number badge
           doc.setFontSize(6); doc.setFont('helvetica', 'bold');
           if (depth === 0) {
-            doc.setFillColor(13, 115, 119); doc.roundedRect(leftMargin + 1 + indent, rowY + 1.5, 5 + apNum.length * 1.8, 4, 1, 1, 'F');
+            doc.setFillColor(30, 86, 181); doc.roundedRect(leftMargin + 1 + indent, rowY + 1.5, 5 + apNum.length * 1.8, 4, 1, 1, 'F');
             doc.setTextColor(255, 255, 255); doc.text(apNum, leftMargin + 2.5 + indent, rowY + 4.3);
           } else {
             doc.setFillColor(226, 232, 240); doc.roundedRect(leftMargin + 1 + indent, rowY + 1.5, 5 + apNum.length * 1.8, 4, 1, 1, 'F');
@@ -6098,7 +6097,7 @@
         y = gBot + 12;
 
         // ─── Detailed AP descriptions ───
-        doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(6, 56, 56);
+        doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(13, 27, 62);
         if (y > 250) { doc.addPage(); y = 36; }
         doc.text('Arbeitspakete im Detail', 14, y); y += 8;
 
@@ -6173,7 +6172,7 @@
         // MA info
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text('Mitarbeiterinformationen', 14, y); y += 8;
 
         doc.setFontSize(9);
@@ -6205,7 +6204,7 @@
         if (blocks.length > 0 || feiertageInRange.length > 0) {
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(6, 56, 56);
+          doc.setTextColor(13, 27, 62);
           doc.text('Blockierungen im Zeitraum', 14, y); y += 6;
 
           const blockRows = [];
@@ -6222,8 +6221,8 @@
             head: [['Typ', 'Zeitraum', 'Notiz']],
             body: blockRows,
             styles: { fontSize: 8, cellPadding: 2.5, font: 'helvetica' },
-            headStyles: { fillColor: [13, 115, 119], textColor: 255, fontStyle: 'bold' },
-            alternateRowStyles: { fillColor: [240, 253, 253] },
+            headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [235, 246, 254] },
             margin: { left: 14, right: 14 },
           });
           y = doc.lastAutoTable.finalY + 10;
@@ -6236,7 +6235,7 @@
           if (y > 240) { doc.addPage(); y = 36; }
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(6, 56, 56);
+          doc.setTextColor(13, 27, 62);
           doc.text('Projekt-Zuweisungen', 14, y); y += 6;
 
           const zwRows = [];
@@ -6252,8 +6251,8 @@
             head: [['Projekt', 'Anteil', 'Zeitraum', 'Verfügbar', 'Proj.-Tage']],
             body: zwRows,
             styles: { fontSize: 8, cellPadding: 2.5, font: 'helvetica' },
-            headStyles: { fillColor: [13, 115, 119], textColor: 255, fontStyle: 'bold' },
-            alternateRowStyles: { fillColor: [240, 253, 253] },
+            headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [235, 246, 254] },
             margin: { left: 14, right: 14 },
           });
           y = doc.lastAutoTable.finalY + 10;
@@ -6354,7 +6353,7 @@
               if (y > 200) { doc.addPage(); y = 36; }
               doc.setFontSize(10);
               doc.setFont('helvetica', 'bold');
-              doc.setTextColor(13, 115, 119);
+              doc.setTextColor(30, 86, 181);
               doc.text(`AP: ${apObj.name}`, 14, y);
               doc.setFontSize(8);
               doc.setFont('helvetica', 'normal');
@@ -6389,7 +6388,7 @@
                 // Month title
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
-                doc.setTextColor(6, 56, 56);
+                doc.setTextColor(13, 27, 62);
                 doc.text(`${monthNames[mMonth]} ${mYear}`, calLeft, y + 4);
                 y += 6;
 
@@ -6418,13 +6417,13 @@
                   // Cell background
                   if (isWorkDay) {
                     if (isPartial) {
-                      doc.setFillColor(204, 251, 249); // light teal for partial
+                      doc.setFillColor(194, 232, 251); // light teal for partial
                     } else {
-                      doc.setFillColor(13, 115, 119); // teal for full day
+                      doc.setFillColor(30, 86, 181); // teal for full day
                     }
                     doc.roundedRect(cx + 0.3, cy + 0.3, cellW - 0.6, cellH - 0.6, 0.8, 0.8, 'F');
                   } else if (blockType) {
-                    const bc = blockType === 'krank' ? [220, 38, 38] : blockType === 'feiertag' ? [245, 158, 11] : [13, 115, 119];
+                    const bc = blockType === 'krank' ? [220, 38, 38] : blockType === 'feiertag' ? [245, 158, 11] : [30, 86, 181];
                     doc.setFillColor(bc[0], bc[1], bc[2]);
                     doc.roundedRect(cx + 0.3, cy + 0.3, cellW - 0.6, cellH - 0.6, 0.8, 0.8, 'F');
                   } else if (isWeekend) {
@@ -6455,7 +6454,7 @@
                   // Hours label for partial day
                   if (isPartial) {
                     doc.setFontSize(4);
-                    doc.setTextColor(13, 115, 119);
+                    doc.setTextColor(30, 86, 181);
                     doc.text(`${partialMap[ds]}h`, cx + cellW / 2, cy + cellH - 1, { align: 'center' });
                   }
                 }
@@ -6494,8 +6493,8 @@
               doc.setFontSize(5.5);
               doc.setFont('helvetica', 'normal');
               const legendItems = [
-                { color: [13, 115, 119], label: 'Arbeitstag (8h)' },
-                { color: [204, 251, 249], label: 'Teiltag', textColor: [13, 115, 119] },
+                { color: [30, 86, 181], label: 'Arbeitstag (8h)' },
+                { color: [194, 232, 251], label: 'Teiltag', textColor: [30, 86, 181] },
                 { color: [220, 38, 38], label: 'Krank' },
                 { color: [245, 158, 11], label: 'Feiertag' },
               ];
@@ -6522,8 +6521,8 @@
                 head: [['Datum', 'Tag', 'Arbeitszeit']],
                 body: dayRows,
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-                headStyles: { fillColor: [15, 168, 163], textColor: 255, fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [240, 253, 253] },
+                headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [235, 246, 254] },
                 columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 14 }, 2: { cellWidth: 'auto' } },
                 margin: { left: 18, right: 14 },
               });
@@ -6559,7 +6558,7 @@
 
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text('Kundeninformationen', 14, y); y += 8;
 
         doc.setFontSize(9);
@@ -6582,7 +6581,7 @@
           if (y > 240) { doc.addPage(); y = 36; }
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.setTextColor(13, 115, 119);
+          doc.setTextColor(30, 86, 181);
           doc.text(`Projekt: ${p.name}`, 14, y);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'normal');
@@ -6602,8 +6601,8 @@
               head: [['Mitarbeiter', 'Anteil', 'Verfügbar', 'Proj.-Tage']],
               body: rows,
               styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-              headStyles: { fillColor: [15, 168, 163], textColor: 255, fontStyle: 'bold' },
-              alternateRowStyles: { fillColor: [240, 253, 253] },
+              headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+              alternateRowStyles: { fillColor: [235, 246, 254] },
               margin: { left: 18, right: 14 },
             });
             y = doc.lastAutoTable.finalY + 8;
@@ -6642,7 +6641,7 @@
 
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(6, 56, 56);
+        doc.setTextColor(13, 27, 62);
         doc.text('Änderungsprotokoll', 14, y); y += 6;
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
@@ -6661,8 +6660,8 @@
           head: [['Zeitpunkt', 'Aktion', 'Entität', 'Name', 'Details']],
           body: rows,
           styles: { fontSize: 7, cellPadding: 2, font: 'helvetica', overflow: 'linebreak' },
-          headStyles: { fillColor: [13, 115, 119], textColor: 255, fontStyle: 'bold' },
-          alternateRowStyles: { fillColor: [240, 253, 253] },
+          headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [235, 246, 254] },
           columnStyles: {
             0: { cellWidth: 30, fontStyle: 'normal', textColor: [100, 116, 139] },
             1: { cellWidth: 18 },
