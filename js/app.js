@@ -6418,17 +6418,26 @@
 
                 y += weekRows * cellH + 4;
 
-                // Signature field
-                if (y + 18 > 270) { doc.addPage(); y = 36; }
+                // Signature fields
+                if (y + 36 > 270) { doc.addPage(); y = 36; }
                 y += 2;
                 doc.setDrawColor(180, 190, 200);
-                doc.line(calLeft, y + 10, calLeft + 70, y + 10);
                 doc.setFontSize(6);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(130, 140, 150);
+
+                // Row 1: Unterschrift Mitarbeiter + Datum
+                doc.line(calLeft, y + 10, calLeft + 70, y + 10);
                 doc.text('Unterschrift Mitarbeiter', calLeft, y + 14);
                 doc.text(`${monthNames[mMonth]} ${mYear}`, calLeft + 50, y + 14);
+                doc.line(calLeft + 90, y + 10, calLeft + 160, y + 10);
+                doc.text('Datum', calLeft + 90, y + 14);
+                y += 18;
 
+                // Row 2: Unterschrift Projektverantwortliche(r) + Datum
+                doc.setDrawColor(180, 190, 200);
+                doc.line(calLeft, y + 10, calLeft + 70, y + 10);
+                doc.text('Unterschrift Projektverantwortliche(r)', calLeft, y + 14);
                 doc.line(calLeft + 90, y + 10, calLeft + 160, y + 10);
                 doc.text('Datum', calLeft + 90, y + 14);
                 y += 20;
