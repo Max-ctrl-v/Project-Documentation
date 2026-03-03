@@ -4921,6 +4921,7 @@
           renderSection('urlaub', urlaubListEl);
           renderSection('krank', krankListEl);
           renderSection('feiertag', feiertagListEl);
+          Router.resolve(); // re-render background page instantly
         }
 
         function renderBudget() {
