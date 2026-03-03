@@ -4849,8 +4849,11 @@
                 const zws = DataStore.getZuweisungenForMitarbeiter(ma.id);
                 let von = jahr + '-01-01', bis = jahr + '-12-31';
                 if (zws.length > 0) {
-                  von = zws.reduce((m, z) => z.von < m ? z.von : m, zws[0].von);
-                  bis = zws.reduce((m, z) => z.bis > m ? z.bis : m, zws[0].bis);
+                  von = zws[0].von; bis = zws[0].bis;
+                  for (let i = 1; i < zws.length; i++) {
+                    if (zws[i].von < von) von = zws[i].von;
+                    if (zws[i].bis > bis) bis = zws[i].bis;
+                  }
                 }
                 openExportDialog('mitarbeiter', ma.id, { von, bis });
               }}, 'PDF'),
@@ -5008,7 +5011,10 @@
           ));
         }
 
-        refreshAll();
+        renderBudget();
+        renderSection('urlaub', urlaubListEl);
+        renderSection('krank', krankListEl);
+        renderSection('feiertag', feiertagListEl);
         body.appendChild(budgetEl);
         body.appendChild(urlaubListEl);
         body.appendChild(krankListEl);
