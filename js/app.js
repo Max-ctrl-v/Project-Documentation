@@ -34,6 +34,8 @@
               try { await this._syncFromBackend(); } catch (syncErr) {
                 console.warn('Daten-Sync fehlgeschlagen:', syncErr.message);
               }
+              // Ensure we have data after sync (fallback to seed if backend returned empty)
+              await this._loadSeedIfEmpty();
               this._showApp();
               this._updateSidebarUser();
               Router.init();
@@ -152,8 +154,9 @@
             // Sync data from backend (non-fatal — login still succeeds)
             try { await this._syncFromBackend(); } catch (syncErr) {
               console.warn('Daten-Sync fehlgeschlagen, nutze lokale Daten:', syncErr.message);
-              await this._loadSeedIfEmpty();
             }
+            // Ensure we have data after sync (fallback to seed if backend returned empty)
+            await this._loadSeedIfEmpty();
             if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Anmelden'; }
             this._showApp();
             this._updateSidebarUser();
@@ -2293,7 +2296,7 @@
     function renderUeberProjekt(container, id) {
       const up = DataStore.getUeberProjekt(id);
       if (!up) {
-        container.appendChild(el('p', { style: { color: '#DC2626' } }, 'Über-Projekt nicht gefunden.'));
+        container.appendChild(renderEmptyState('Firma nicht gefunden', 'Diese Firma existiert nicht mehr oder wurde noch nicht geladen.', 'Zum Dashboard', () => Router.navigate('#/dashboard')));
         return;
       }
       if (up.nurAdmin && !AuthSystem.isAdmin()) {
