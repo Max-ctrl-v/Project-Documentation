@@ -6277,8 +6277,8 @@
               if (!apCalc) continue;
 
               const totalApDays = apCalc.tage;
-              const fullDays = Math.floor(totalApDays);
-              const remainingHours = Math.round((totalApDays - fullDays) * 8);
+              const totalHours = Math.round(totalApDays * 8);
+              if (totalHours <= 0) continue;
 
               // Compute AP date range
               const apStart = apObj.startDatum || projekt.startDatum;
@@ -6298,26 +6298,35 @@
                 cur.setDate(cur.getDate() + 1);
               }
 
-              // Distribute days (same seeded random logic as calendar)
-              const totalSlots = fullDays + (remainingHours > 0 ? 1 : 0);
+              // Distribute hours with variation (min 1h, max 8h per day)
+              // Spread across more days than before so employee doesn't always work full 8h
+              let numDays;
+              if (totalHours >= availableDays.length * 8) {
+                numDays = availableDays.length;
+              } else {
+                numDays = Math.min(Math.ceil(totalHours / 4.5), availableDays.length);
+                if (numDays < 1) numDays = 1;
+              }
+
               const scheduledDays = [];
+              // Seeded random (deterministic per employee+AP combo)
+              let seed = 0;
+              for (let i = 0; i < ma.id.length; i++) seed = ((seed << 5) - seed + ma.id.charCodeAt(i)) | 0;
+              for (let i = 0; i < av.arbeitspaketId.length; i++) seed = ((seed << 5) - seed + av.arbeitspaketId.charCodeAt(i)) | 0;
+              function _sr() { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff; }
 
-              if (totalSlots >= availableDays.length) {
-                for (const ds of availableDays) scheduledDays.push({ date: ds, hours: 8 });
-                if (remainingHours > 0 && scheduledDays.length > 0) scheduledDays[scheduledDays.length - 1].hours = remainingHours;
-              } else if (totalSlots > 0) {
-                let seed = 0;
-                for (let i = 0; i < ma.id.length; i++) seed = ((seed << 5) - seed + ma.id.charCodeAt(i)) | 0;
-                for (let i = 0; i < av.arbeitspaketId.length; i++) seed = ((seed << 5) - seed + av.arbeitspaketId.charCodeAt(i)) | 0;
-                function _sr() { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff; }
-
+              // Pick which days to work on (spread evenly with some clustering)
+              let pickedIndices;
+              if (numDays >= availableDays.length) {
+                pickedIndices = availableDays.map((_, i) => i);
+              } else {
                 const pairs = [];
                 for (let i = 0; i < availableDays.length - 1; i++) {
                   const diff = (new Date(availableDays[i + 1]) - new Date(availableDays[i])) / 86400000;
                   if (diff <= 3) pairs.push([i, i + 1]);
                 }
                 const picked = new Set();
-                let rem = totalSlots;
+                let rem = numDays;
                 if (pairs.length > 0 && rem >= 2) {
                   const numPairs = Math.min(Math.floor(rem / 2), pairs.length);
                   const step = pairs.length / numPairs;
@@ -6337,10 +6346,38 @@
                     picked.add(unpicked[Math.floor(off + s * step) % unpicked.length]);
                   }
                 }
-                const sortedPicked = [...picked].sort((a, b) => a - b);
-                for (let i = 0; i < sortedPicked.length && i < totalSlots; i++) {
-                  const isLast = (i === totalSlots - 1 && remainingHours > 0);
-                  scheduledDays.push({ date: availableDays[sortedPicked[i]], hours: isLast ? remainingHours : 8 });
+                pickedIndices = [...picked].sort((a, b) => a - b);
+              }
+
+              // Distribute hours across picked days with variation
+              const dayHours = [];
+              let hoursLeft = totalHours;
+              for (let i = 0; i < pickedIndices.length; i++) {
+                const daysLeft = pickedIndices.length - i;
+                if (daysLeft === 1) {
+                  dayHours.push(Math.min(hoursLeft, 8));
+                  hoursLeft -= dayHours[dayHours.length - 1];
+                } else {
+                  const avg = hoursLeft / daysLeft;
+                  const lo = Math.max(1, Math.round(avg * 0.5));
+                  const hi = Math.min(8, hoursLeft - (daysLeft - 1), Math.round(avg * 1.5));
+                  const h = lo >= hi ? Math.max(1, Math.min(8, lo)) : Math.floor(lo + _sr() * (hi - lo + 1));
+                  dayHours.push(h);
+                  hoursLeft -= h;
+                }
+              }
+              // Distribute any leftover hours
+              while (hoursLeft > 0) {
+                let added = false;
+                for (let i = 0; i < dayHours.length && hoursLeft > 0; i++) {
+                  if (dayHours[i] < 8) { dayHours[i]++; hoursLeft--; added = true; }
+                }
+                if (!added) break;
+              }
+
+              for (let i = 0; i < pickedIndices.length; i++) {
+                if (dayHours[i] > 0) {
+                  scheduledDays.push({ date: availableDays[pickedIndices[i]], hours: dayHours[i] });
                 }
               }
 
