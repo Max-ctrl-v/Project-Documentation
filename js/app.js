@@ -418,7 +418,7 @@
 
       // Fire-and-forget backend sync — keeps DB in sync with localStorage edits
       _pushToBackend(fn) {
-        if (!window.DataStoreAPI || !window.TokenManager?.getToken()) return;
+        if (!window.DataStoreAPI || !window.TokenManager?.getAccessToken()) return;
         fn().catch(e => console.warn('Backend-Sync fehlgeschlagen:', e.message));
       },
 
