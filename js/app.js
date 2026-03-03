@@ -312,6 +312,35 @@
             })),
           };
 
+          // Compare backend data with existing localStorage — only overwrite if backend is richer
+          const existing = JSON.parse(localStorage.getItem('novarix_data') || '{}');
+          const localApCount = (existing.zuweisungen || []).reduce((n, z) => n + (z.arbeitspaketVerteilung || []).length, 0);
+          const backendApCount = zuweisungen.reduce((n, z) => n + (z.arbeitspaketVerteilung || []).length, 0);
+          const localZwCount = (existing.zuweisungen || []).length;
+          const backendZwCount = zuweisungen.length;
+
+          if (localZwCount > 0 && backendZwCount === 0) {
+            // Backend is empty but localStorage has data — push local data to backend
+            console.log('Backend leer, behalte lokale Daten. Versuche Push zum Backend...');
+            try {
+              await apiFetch('/backup/migrate-localstorage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(existing),
+              });
+              console.log('Lokale Daten zum Backend synchronisiert');
+            } catch (pushErr) {
+              console.warn('Push zum Backend fehlgeschlagen:', pushErr.message);
+            }
+            return;
+          }
+
+          if (localApCount > 0 && backendApCount === 0 && localZwCount >= backendZwCount) {
+            // Backend has zuweisungen but no AP distributions — localStorage is richer
+            console.log('Backend fehlen AP-Verteilungen, behalte lokale Daten.');
+            return;
+          }
+
           localStorage.setItem('novarix_data', JSON.stringify(localData));
           console.log('Sync OK:', ueberProjekte.length, 'Firmen,', mitarbeiter.length, 'MA,', zuweisungen.length, 'Zuweisungen');
         } catch (e) {
