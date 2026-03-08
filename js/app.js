@@ -5565,13 +5565,27 @@
             doc.setFillColor(r, g, b);
             doc.rect(0, (barH * i) / gradSteps, pageWidth, barH / gradSteps + 0.5, 'F');
           }
+          // Add logo if available
+          const logoX = 10;
+          const logoH = 16;
+          const logoW = 16;
+          const logoY = 6;
+          let textLeft = 14;
+          if (window.NOVARIX_LOGO_BASE64) {
+            try {
+              doc.addImage(window.NOVARIX_LOGO_BASE64, 'PNG', logoX, logoY, logoW, logoH);
+              textLeft = logoX + logoW + 4;
+            } catch (e) {
+              console.warn('PDF logo failed:', e);
+            }
+          }
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(16);
           doc.setTextColor(255, 255, 255);
-          doc.text('NOVARIX', 14, 13);
+          doc.text('NOVARIX', textLeft, 13);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          doc.text(title, 14, 21);
+          doc.text(title, textLeft, 21);
           doc.setFontSize(8);
           doc.text(`Dok.Nr.: ${dokumentNr}`, pageWidth - 14, 13, { align: 'right' });
           doc.text(`Datum: ${dateStr}`, pageWidth - 14, 19, { align: 'right' });
