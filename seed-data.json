@@ -1,346 +1,566 @@
 {
   "ueberProjekte": [
     {
-      "id": "a0000001-1111-4000-a000-000000000001",
-      "name": "Müller & Söhne Maschinenbau GmbH",
-      "beschreibung": "Mittelständischer Sondermaschinenbauer mit 85 Mitarbeitern. Spezialisiert auf automatisierte Fertigungslinien, CNC-Retrofit und Robotik-Integration für die Automobil- und Luftfahrtindustrie. Standort: Heilbronn.",
+      "id": "aa000001-1111-4000-b000-000000000001",
+      "name": "NordWind Energie GmbH",
+      "beschreibung": "Mittelständisches Unternehmen für Windkraftanlagen und erneuerbare Energiesysteme mit 120 Mitarbeitern. Planung, Konstruktion und Installation von Onshore-Windparks und Hybridenergieanlagen. Standort: Bremen.",
       "unternehmensTyp": "kmu",
       "projekte": [
         {
-          "id": "b0000001-1111-4000-a000-000000000001",
-          "name": "Automatisierte Fertigungslinie 4.0",
-          "beschreibung": "Entwicklung einer vollautomatisierten Fertigungslinie für Präzisions-Drehteile (Toleranz ±0,01 mm) mit IoT-Sensorik, Echtzeit-Qualitätskontrolle via Machine Vision und Anbindung an das bestehende SAP-Fertigungsleitsystem. Kapazität: 12.000 Teile/Schicht.",
+          "id": "bb000001-0001-4000-b000-000000000001",
+          "name": "Windpark Nordseeküste II",
+          "beschreibung": "Planung und Errichtung eines Onshore-Windparks mit 8 Turbinen (je 4,5 MW Nennleistung) inkl. Netzanbindung, SCADA-System und Umweltmonitoring. Standort: Cuxhaven-Ost.",
           "status": "aktiv",
-          "startDatum": "2025-01-15",
-          "endDatum": "2027-06-30",
-          "sollKosten": 850000,
+          "startDatum": "2025-06-01",
+          "endDatum": "2027-12-31",
+          "sollKosten": 1200000,
           "arbeitspakete": [
             {
-              "id": "c0000001-0101-4000-a000-000000000001",
-              "name": "Konzeptphase & Machbarkeitsstudie",
-              "beschreibung": "Stakeholder-Workshops, Ist-Analyse der bestehenden Fertigung (Taktzeiten, Ausschussraten), Benchmarking, technisches Konzept, Wirtschaftlichkeitsberechnung und Investitionsantrag.",
+              "id": "cc000001-0001-4000-b000-000000000001",
+              "name": "Standortanalyse & Genehmigungsverfahren",
+              "beschreibung": "Windmessung (12 Monate Daten), Schallgutachten, Schattenwurfberechnung, UVP, BImSchG-Antrag, Flächennutzungsplan-Änderung.",
               "status": "abgeschlossen",
-              "startDatum": "2025-01-15",
-              "endDatum": "2025-04-30",
+              "startDatum": "2025-06-01",
+              "endDatum": "2025-12-31",
               "unterArbeitspakete": [
                 {
-                  "id": "c0000001-0111-4000-a000-000000000001",
-                  "name": "Anforderungsanalyse & Lastenheft",
-                  "beschreibung": "Erfassung aller Anforderungen der Produktion, Qualitätssicherung und IT. Erstellung Lastenheft mit Muss-/Soll-/Kann-Kriterien.",
-                  "status": "abgeschlossen",
-                  "startDatum": "2025-01-15",
-                  "endDatum": "2025-02-28"
-                },
-                {
-                  "id": "c0000001-0112-4000-a000-000000000002",
-                  "name": "Machbarkeitsstudie & Wirtschaftlichkeit",
-                  "beschreibung": "Technische Machbarkeitsprüfung, ROI-Berechnung, Vergleich Eigenentwicklung vs. Zukauf, Risikoanalyse, Amortisationsrechnung (Ziel: < 3 Jahre).",
-                  "status": "abgeschlossen",
-                  "startDatum": "2025-02-15",
-                  "endDatum": "2025-04-30"
-                }
-              ]
-            },
-            {
-              "id": "c0000001-0102-4000-a000-000000000002",
-              "name": "Mechanische Konstruktion",
-              "beschreibung": "3D-Konstruktion der gesamten Fertigungslinie in SolidWorks: Grundgestell, Zuführsysteme, Werkzeugwechsler, Greifer, Schutzeinhausung. Fertigungszeichnungen und Stücklisten.",
-              "status": "abgeschlossen",
-              "startDatum": "2025-03-01",
-              "endDatum": "2025-10-31",
-              "unterArbeitspakete": [
-                {
-                  "id": "c0000001-0121-4000-a000-000000000001",
-                  "name": "Grundgestell & Rahmenkonzept",
-                  "beschreibung": "Schweißkonstruktion Maschinengestell, FEM-Berechnung, Schwingungsanalyse, Fundamentplanung. Material: S355J2.",
-                  "status": "abgeschlossen",
-                  "startDatum": "2025-03-01",
-                  "endDatum": "2025-06-30"
-                },
-                {
-                  "id": "c0000001-0122-4000-a000-000000000002",
-                  "name": "Werkzeugwechsler & Greifersysteme",
-                  "beschreibung": "Konstruktion pneumatischer Greifer, automatischer Werkzeugwechsler (12 Plätze), Schnittstelle zu Roboter. Taktzeit Werkzeugwechsel: < 8 Sek.",
+                  "id": "cc000001-0011-4000-b000-000000000001",
+                  "name": "Windgutachten & Ertragsprognose",
+                  "beschreibung": "Auswertung Mastmessdaten, LIDAR-Messung, Ertragsberechnung nach IEC 61400-12, Turbulenzintensität, Scherwert.",
                   "status": "abgeschlossen",
                   "startDatum": "2025-06-01",
-                  "endDatum": "2025-10-31"
-                }
-              ]
-            },
-            {
-              "id": "c0000001-0103-4000-a000-000000000003",
-              "name": "Steuerungstechnik & SPS-Programmierung",
-              "beschreibung": "Programmierung Siemens S7-1500 / TIA Portal V18. Ablaufsteuerung, Sicherheitsschaltkreise (SIL 3), Antriebstechnik (Sinamics S120), Profinet-Kommunikation.",
-              "status": "in_bearbeitung",
-              "startDatum": "2025-08-01",
-              "endDatum": "2026-04-30",
-              "unterArbeitspakete": [
-                {
-                  "id": "c0000001-0131-4000-a000-000000000001",
-                  "name": "SPS-Programmierung & Ablaufsteuerung",
-                  "beschreibung": "Hauptprogramm S7-1500, Betriebsarten (Auto/Hand/Einrichten), Rezepturverwaltung, Störmeldekonzept, Diagnosefunktionen.",
-                  "status": "in_bearbeitung",
-                  "startDatum": "2025-08-01",
-                  "endDatum": "2026-01-31"
+                  "endDatum": "2025-09-30"
                 },
                 {
-                  "id": "c0000001-0132-4000-a000-000000000002",
-                  "name": "HMI-Bedienoberfläche (WinCC Unified)",
-                  "beschreibung": "Touch-Panel Bedienoberfläche: Prozessvisualisierung, Rezepturanzeige, Trendkurven, Störmeldearchiv, Benutzerverwaltung.",
-                  "status": "offen",
-                  "startDatum": "2026-01-01",
-                  "endDatum": "2026-04-30"
+                  "id": "cc000001-0012-4000-b000-000000000002",
+                  "name": "Umweltverträglichkeit & Genehmigung",
+                  "beschreibung": "Artenschutzgutachten (Rotmilan, Fledermäuse), Schallimmissionsprognose, BImSchG-Antrag mit allen Anlagen.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2025-08-01",
+                  "endDatum": "2025-12-31"
                 }
               ]
             },
             {
-              "id": "c0000001-0104-4000-a000-000000000004",
-              "name": "IoT-Integration & Sensorik",
-              "beschreibung": "Anbindung von 48 Sensoren (Temperatur, Vibration, Kraft, Durchfluss) an Edge-Gateway. MQTT-Kommunikation, Datenbank (InfluxDB), Dashboard für Predictive Maintenance.",
-              "status": "offen",
-              "startDatum": "2026-01-01",
-              "endDatum": "2026-08-31",
+              "id": "cc000001-0002-4000-b000-000000000002",
+              "name": "Turbinenauswahl & Beschaffung",
+              "beschreibung": "Ausschreibung, Angebotsevaluierung (Vestas/Enercon/Nordex), Vertragsverhandlung, Lieferplanung, Anzahlung und Bankgarantie.",
+              "status": "abgeschlossen",
+              "startDatum": "2025-10-01",
+              "endDatum": "2026-03-31",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000001-0105-4000-a000-000000000005",
-              "name": "Montage & Inbetriebnahme",
-              "beschreibung": "Mechanische Montage vor Ort, Elektroinstallation, Pneumatik-Verrohrung, schrittweise Inbetriebnahme der Einzelstationen, Gesamtintegration.",
+              "id": "cc000001-0003-4000-b000-000000000003",
+              "name": "Fundamentbau & Infrastruktur",
+              "beschreibung": "Gründungsberechnung, Fundamentherstellung (8× Kreisringfundament), Kranstellflächen, Zuwegung, Kabelgräben (20 kV).",
+              "status": "in_bearbeitung",
+              "startDatum": "2026-03-01",
+              "endDatum": "2026-10-31",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000001-0031-4000-b000-000000000001",
+                  "name": "Bodengutachten & Fundamentplanung",
+                  "beschreibung": "Baugrunduntersuchung, Pfahlgründung vs. Flachgründung, Statikberechnung, Bewehrungsplanung.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2026-03-01",
+                  "endDatum": "2026-05-31"
+                },
+                {
+                  "id": "cc000001-0032-4000-b000-000000000002",
+                  "name": "Tiefbau & Kabelverlegung",
+                  "beschreibung": "Erdarbeiten, Kabelgräben 20 kV (6,5 km), Leerrohre, Kranstellflächen verdichten, Entwässerung.",
+                  "status": "in_bearbeitung",
+                  "startDatum": "2026-06-01",
+                  "endDatum": "2026-10-31"
+                }
+              ]
+            },
+            {
+              "id": "cc000001-0004-4000-b000-000000000004",
+              "name": "Turbinenmontage & Elektrik",
+              "beschreibung": "Vormontage Turmsegmente, Gondelmontage, Rotorinstallation (LTM 1750), MS-Schaltanlage, Transformatorstationen.",
+              "status": "offen",
+              "startDatum": "2026-09-01",
+              "endDatum": "2027-06-30",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000001-0005-4000-b000-000000000005",
+              "name": "SCADA-System & Netzanbindung",
+              "beschreibung": "Wind-SCADA Plattform, Fernüberwachung, Einspeisemanagement, Blindleistungskompensation, Netzbetreiber-Abstimmung.",
+              "status": "offen",
+              "startDatum": "2027-01-01",
+              "endDatum": "2027-09-30",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000001-0006-4000-b000-000000000006",
+              "name": "Inbetriebnahme & Probebetrieb",
+              "beschreibung": "Einzelturbinen-IBN, Leistungskurve-Vermessung, 240h-Probebetrieb, Abnahmeprotokoll, Übergabe an Betriebsführung.",
+              "status": "offen",
+              "startDatum": "2027-06-01",
+              "endDatum": "2027-12-31",
+              "unterArbeitspakete": []
+            }
+          ],
+          "externeEntwicklungen": [
+            {
+              "id": "ee000001-0001-4000-b000-000000000001",
+              "name": "Artenschutz-Abschaltmodul (BatDetect Pro)",
+              "auftragnehmer": "Swifter GmbH",
+              "auftragswert": 68000,
+              "foerderquote": 50,
+              "status": "beauftragt",
+              "beschreibung": "Ultraschall-basiertes Fledermaus-Erkennungssystem mit automatischer Abschaltung bei erhöhter Aktivität. 8 Detektoren, KI-Klassifikation, Echtzeit-SCADA-Anbindung.",
+              "dokumentIds": [],
+              "createdAt": "2026-01-15T08:00:00.000Z"
+            },
+            {
+              "id": "ee000001-0002-4000-b000-000000000002",
+              "name": "Spezial-Blitzschutzsystem",
+              "auftragnehmer": "DEHN SE",
+              "auftragswert": 42000,
+              "foerderquote": 35,
+              "status": "aktiv",
+              "beschreibung": "Blitzschutzsystem Klasse I nach IEC 62305 für alle 8 Turbinen. Ableiter, Erdungsanlage, Überspannungsschutz Steuerungselektronik.",
+              "dokumentIds": [],
+              "createdAt": "2026-08-01T10:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "bb000001-0002-4000-b000-000000000002",
+          "name": "Solar-Wind-Hybrid Speichersystem",
+          "beschreibung": "Entwicklung einer Hybridanlage: 2 MW PV-Freiflächenanlage kombiniert mit 1,5 MW Windturbine und 4 MWh Batteriespeicher (LFP). Eigenverbrauchsoptimierung, Regelenergiemarkt-Teilnahme.",
+          "status": "aktiv",
+          "startDatum": "2025-09-01",
+          "endDatum": "2027-06-30",
+          "sollKosten": 750000,
+          "arbeitspakete": [
+            {
+              "id": "cc000002-0001-4000-b000-000000000001",
+              "name": "Systemarchitektur & Simulation",
+              "beschreibung": "Energiefluss-Simulation (HOMER Pro), Speicherdimensionierung, Wirtschaftlichkeitsrechnung, Netzverträglichkeitsprüfung.",
+              "status": "abgeschlossen",
+              "startDatum": "2025-09-01",
+              "endDatum": "2026-02-28",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000002-0011-4000-b000-000000000001",
+                  "name": "Lastprofilanalyse & Simulation",
+                  "beschreibung": "Jahreslastprofil Industriekunde, PV-Ertrags-Simulation (PVSol), Wind-Ertrags-Simulation, Deckungsgrad-Optimierung.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2025-09-01",
+                  "endDatum": "2025-12-31"
+                },
+                {
+                  "id": "cc000002-0012-4000-b000-000000000002",
+                  "name": "Speicherkonzept & BMS-Spezifikation",
+                  "beschreibung": "Batteriechemie-Auswahl (LFP vs. NMC), BMS-Anforderungen, Thermomanagement, Sicherheitskonzept nach IEC 62619.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2025-11-01",
+                  "endDatum": "2026-02-28"
+                }
+              ]
+            },
+            {
+              "id": "cc000002-0002-4000-b000-000000000002",
+              "name": "PV-Freiflächenanlage",
+              "beschreibung": "Modulauswahl (bifazial, 580 Wp), Unterkonstruktion (Rammpfosten), Wechselrichter-Dimensionierung (String vs. Zentral), Verkabelung, MS-Trafo.",
+              "status": "in_bearbeitung",
+              "startDatum": "2026-02-01",
+              "endDatum": "2026-09-30",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000002-0003-4000-b000-000000000003",
+              "name": "Batteriespeicher Integration",
+              "beschreibung": "Container-Speichersystem, BMS-Integration, Leistungselektronik (PCS), Netzanschluss, Feuerlöschanlage, Fernwartung.",
               "status": "offen",
               "startDatum": "2026-06-01",
-              "endDatum": "2026-12-31",
+              "endDatum": "2027-01-31",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000001-0106-4000-a000-000000000006",
-              "name": "Testphase & Optimierung",
-              "beschreibung": "Probelauf mit Echtteilen, Taktzeit-Optimierung, Qualitätsfähigkeitsnachweis (Cpk ≥ 1,67), Energieverbrauchsmessung, CE-Konformitätsbewertung.",
+              "id": "cc000002-0004-4000-b000-000000000004",
+              "name": "EMS & Regelenergie",
+              "beschreibung": "Energiemanagementsystem: Prognose-Algorithmen (ML), Eigenverbrauchsoptimierung, Präqualifikation FCR/aFRR, Vermarktung Regelenergie.",
               "status": "offen",
               "startDatum": "2026-10-01",
               "endDatum": "2027-04-30",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000001-0107-4000-a000-000000000007",
-              "name": "Abnahme & Dokumentation",
-              "beschreibung": "Kundenabnahme (FAT/SAT), Betriebsanleitung, Wartungshandbuch, Schulung Bediener & Instandhaltung, CE-Erklärung, Übergabe an Produktion.",
+              "id": "cc000002-0005-4000-b000-000000000005",
+              "name": "Abnahme & Netzanschluss",
+              "beschreibung": "TAB-konforme Inbetriebnahme, Zählersetzen, Einspeisevertrag, Direktvermarktung (Marktprämienmodell), 30-Tage Probebetrieb.",
               "status": "offen",
-              "startDatum": "2027-03-01",
+              "startDatum": "2027-02-01",
               "endDatum": "2027-06-30",
               "unterArbeitspakete": []
             }
           ],
           "externeEntwicklungen": [
             {
-              "id": "ee-00000001-0001-4000-a000-000000000001",
-              "name": "Spezial-Greifersystem (3-Backen-Zentrischgreifer)",
-              "auftragnehmer": "SCHUNK GmbH & Co. KG",
-              "auftragswert": 47500,
-              "foerderquote": 50,
-              "status": "abgeschlossen",
-              "beschreibung": "Entwicklung und Fertigung eines kundenspezifischen 3-Backen-Zentrischgreifers mit integrierter Kraftmessung für Teildurchmesser 8-65 mm. Inkl. Greiferkonsole und SPS-Schnittstelle.",
+              "id": "ee000002-0001-4000-b000-000000000001",
+              "name": "KI-basiertes Energiemanagementsystem",
+              "auftragnehmer": "GridSense AI UG",
+              "auftragswert": 95000,
+              "foerderquote": 45,
+              "status": "aktiv",
+              "beschreibung": "Machine-Learning-basiertes EMS für Erzeugungsprognose und Speichersteuerung. Trainiert auf 3 Jahre historische Wetterdaten, 15-Minuten Auflösung.",
               "dokumentIds": [],
-              "createdAt": "2025-05-15T08:00:00.000Z"
-            },
-            {
-              "id": "ee-00000001-0002-4000-a000-000000000002",
-              "name": "Machine-Vision Qualitätsprüfung",
-              "auftragnehmer": "Cognex Germany Inc.",
-              "auftragswert": 89000,
-              "foerderquote": 40,
-              "status": "beauftragt",
-              "beschreibung": "Inline-Qualitätsprüfsystem mit 4 Kameras (5 MP), Beleuchtung, Bildverarbeitungssoftware für Maßhaltigkeitskontrolle und Oberflächeninspektion. Prüfzeit < 2 Sek/Teil.",
-              "dokumentIds": [],
-              "createdAt": "2026-02-01T10:00:00.000Z"
+              "createdAt": "2026-04-01T09:00:00.000Z"
             }
           ]
         },
         {
-          "id": "b0000001-2222-4000-a000-000000000002",
-          "name": "CNC-Steuerungsmodernisierung (Retrofit)",
-          "beschreibung": "Retrofit einer 15 Jahre alten Heller MCH-350 Horizontalfräsmaschine: Austausch Siemens Sinumerik 810D → 840D sl, neue Antriebe, Messtaster-Nachrüstung, Anbindung an MES-System (HYDRA).",
-          "status": "abgeschlossen",
-          "startDatum": "2025-03-01",
-          "endDatum": "2025-11-30",
-          "sollKosten": 185000,
-          "arbeitspakete": [
-            {
-              "id": "c0000002-0201-4000-a000-000000000001",
-              "name": "Ist-Analyse & Pflichtenheft",
-              "beschreibung": "Bestandsaufnahme alte Steuerung, Vermessung Achsgenauigkeit, Definition Retrofit-Umfang, Abstimmung mit Heller Service.",
-              "status": "abgeschlossen",
-              "startDatum": "2025-03-01",
-              "endDatum": "2025-04-15",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000002-0202-4000-a000-000000000002",
-              "name": "Hardware-Beschaffung & Schaltschrankbau",
-              "beschreibung": "Bestellung Sinumerik 840D sl, Sinamics S120, Motoren, Schaltschrankumbau, Kabelsätze, Messtaster Renishaw OMP60.",
-              "status": "abgeschlossen",
-              "startDatum": "2025-04-15",
-              "endDatum": "2025-07-31",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000002-0203-4000-a000-000000000003",
-              "name": "Software-Parametrierung & NC-Programme",
-              "beschreibung": "Maschinenparameter, Kompensationstabellen, Werkzeugverwaltung, Übernahme bestehender NC-Programme, Postprozessor-Anpassung.",
-              "status": "abgeschlossen",
-              "startDatum": "2025-06-01",
-              "endDatum": "2025-09-30",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000002-0204-4000-a000-000000000004",
-              "name": "Test, Einmessen & Abnahme",
-              "beschreibung": "Geometrievermessung (Ballbar-Test), Probefräsung Referenzwerkstück, Kreisformtest, Langzeit-Testlauf 72h, Abnahmeprotokoll.",
-              "status": "abgeschlossen",
-              "startDatum": "2025-09-01",
-              "endDatum": "2025-11-30",
-              "unterArbeitspakete": []
-            }
-          ]
-        },
-        {
-          "id": "b0000001-3333-4000-a000-000000000003",
-          "name": "Roboterzelle Schweißtechnik (MIG/MAG)",
-          "beschreibung": "Planung und Aufbau einer automatisierten Roboter-Schweißzelle für die Serienfertigung von Fahrwerk-Querträgern. 2x KUKA KR 16 Roboter, Dreh-Kipp-Positionierer, Offline-Programmierung, Nahtführungssensorik.",
+          "id": "bb000001-0003-4000-b000-000000000003",
+          "name": "Offshore-Wartungsdrohne Prototyp",
+          "beschreibung": "Entwicklung eines autonomen Inspektionsdrohnen-Systems für Offshore-Windturbinen. Rotorblattinspektion mittels KI-gestützter Bildanalyse, Thermografie, Ultraschall-Dickenmessung. GPS-RTK Navigation.",
           "status": "geplant",
-          "startDatum": "2027-01-15",
-          "endDatum": "2028-12-31",
-          "sollKosten": 620000,
+          "startDatum": "2027-04-01",
+          "endDatum": "2029-03-31",
+          "sollKosten": 980000,
           "arbeitspakete": [
             {
-              "id": "c0000003-0301-4000-a000-000000000001",
-              "name": "Lastenheft & Zellkonzept",
-              "beschreibung": "Schweißfolgeplanung, Taktzeit-Simulation, Zelllayout (3D), Roboterauswahl, Greifer-/Vorrichtungskonzept, Risikobeurteilung nach Maschinenrichtlinie.",
+              "id": "cc000003-0001-4000-b000-000000000001",
+              "name": "Anforderungen & Regulatorik",
+              "beschreibung": "Anforderungskatalog, EASA-Regulierung (Specific Category, SORA), Betriebskonzept BVLOS, Risikoanalyse, Versicherung.",
               "status": "offen",
-              "startDatum": "2027-01-15",
-              "endDatum": "2027-04-30",
+              "startDatum": "2027-04-01",
+              "endDatum": "2027-09-30",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000003-0302-4000-a000-000000000002",
-              "name": "Roboterauswahl & Beschaffung",
-              "beschreibung": "Angebotsevaluierung KUKA/ABB/Fanuc, Bestellung Roboter mit Schweißausrüstung (Fronius TPS), Dreh-Kipp-Positionierer, Sicherheitstechnik.",
+              "id": "cc000003-0002-4000-b000-000000000002",
+              "name": "Drohnenplattform & Sensorik",
+              "beschreibung": "Oktocopter-Plattform (15 kg Nutzlast), Kamerasystem (4K + Thermografie), Ultraschall-Sensor, GPS-RTK, Windkompensation.",
               "status": "offen",
-              "startDatum": "2027-03-01",
-              "endDatum": "2027-07-31",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000003-0303-4000-a000-000000000003",
-              "name": "Vorrichtungsbau",
-              "beschreibung": "Konstruktion und Fertigung der Schweißvorrichtungen (4 Varianten), Spannelemente, Referenzierung, Vorrichtungs-Wechselsystem.",
-              "status": "offen",
-              "startDatum": "2027-06-01",
-              "endDatum": "2027-12-31",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000003-0304-4000-a000-000000000004",
-              "name": "Programmierung & Teach-In",
-              "beschreibung": "Offline-Programmierung (KUKA.Sim), Schweißparameter-Entwicklung (WPS), Nahtführung konfigurieren, Teach-In vor Ort, Schweißfolge-Optimierung.",
-              "status": "offen",
-              "startDatum": "2027-09-01",
+              "startDatum": "2027-07-01",
               "endDatum": "2028-04-30",
-              "unterArbeitspakete": []
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000003-0021-4000-b000-000000000001",
+                  "name": "Flugplattform & Antrieb",
+                  "beschreibung": "Carbon-Rahmen, redundante Motorsteuerung, 45-min Flugzeit, IP65 Schutz, Notlandesystem.",
+                  "status": "offen",
+                  "startDatum": "2027-07-01",
+                  "endDatum": "2028-01-31"
+                },
+                {
+                  "id": "cc000003-0022-4000-b000-000000000002",
+                  "name": "Sensorintegration & Kalibrierung",
+                  "beschreibung": "Multisensor-Payload, Gimbal-Stabilisierung, Kalibrier-Routine, Datenaufzeichnung 100 GB/Flug.",
+                  "status": "offen",
+                  "startDatum": "2027-12-01",
+                  "endDatum": "2028-04-30"
+                }
+              ]
             },
             {
-              "id": "c0000003-0305-4000-a000-000000000005",
-              "name": "Integration & Validierung",
-              "beschreibung": "Gesamtintegration, Erstmusterprüfung, Schweißnahtprüfung (Schliffbild, Zugversuch), Taktzeitnachweis, CE-Zertifizierung.",
+              "id": "cc000003-0003-4000-b000-000000000003",
+              "name": "KI-Bildanalyse & Schadenserkennung",
+              "beschreibung": "CNN-Modell für Rissdetekion, Erosion, Blitzschäden. Trainingsdata (10.000+ annotierte Bilder), Edge-Computing auf Drohne.",
               "status": "offen",
-              "startDatum": "2028-03-01",
+              "startDatum": "2028-01-01",
               "endDatum": "2028-09-30",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000003-0306-4000-a000-000000000006",
-              "name": "Serienanlauf & Schulung",
-              "beschreibung": "Produktionsfreigabe, Bediener-Schulung (3 Schichten), Instandhaltungsschulung, Ersatzteilbevorratung, Hochlaufkurve bis Serienfertigung.",
+              "id": "cc000003-0004-4000-b000-000000000004",
+              "name": "Autonome Navigation & Flugplanung",
+              "beschreibung": "Missionsplanung, Turbinen-Erkennung, automatischer Scan-Pfad, Kollisionsvermeidung, Return-to-Ship Funktion.",
               "status": "offen",
-              "startDatum": "2028-07-01",
+              "startDatum": "2028-03-01",
               "endDatum": "2028-12-31",
               "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000003-0005-4000-b000-000000000005",
+              "name": "Felderprobung & Zertifizierung",
+              "beschreibung": "Testflüge Onshore (Phase 1), Offshore-Tests Nordsee (Phase 2), EASA-Betriebsgenehmigung, Kundendemonstration.",
+              "status": "offen",
+              "startDatum": "2028-09-01",
+              "endDatum": "2029-03-31",
+              "unterArbeitspakete": []
+            }
+          ],
+          "externeEntwicklungen": [
+            {
+              "id": "ee000003-0001-4000-b000-000000000001",
+              "name": "Ultraschall-Dickenmesssensor (Miniaturisiert)",
+              "auftragnehmer": "Olympus IMS GmbH",
+              "auftragswert": 125000,
+              "foerderquote": 40,
+              "status": "geplant",
+              "beschreibung": "Kompakter Ultraschall-Sensor (< 500g) für kontaktlose GFK-Dickenmessung an Rotorblättern. Frequenzbereich 0,5–10 MHz, Messgenauigkeit ±0,1 mm.",
+              "dokumentIds": [],
+              "createdAt": "2027-05-01T10:00:00.000Z"
             }
           ]
         }
       ]
     },
     {
-      "id": "a0000002-2222-4000-a000-000000000002",
-      "name": "Rheinland Automotive AG",
-      "beschreibung": "Tier-1 Automobilzulieferer mit 2.400 Mitarbeitern. Produktion von Antriebskomponenten für Elektro- und Hybridfahrzeuge. Hauptwerk Köln, Zweigwerk Aachen.",
+      "id": "aa000002-2222-4000-b000-000000000002",
+      "name": "TechMed Solutions AG",
+      "beschreibung": "Großunternehmen für Medizintechnik mit 3.200 Mitarbeitern. Entwicklung und Produktion von chirurgischen Robotiksystemen, diagnostischen Bildgebungsgeräten und KI-gestützter Patientenüberwachung. Hauptsitz: München, Entwicklungszentrum Erlangen.",
       "unternehmensTyp": "grossunternehmen",
       "projekte": [
         {
-          "id": "b0000002-4444-4000-a000-000000000004",
-          "name": "E-Antrieb Prüfstand HV-300",
-          "beschreibung": "Entwicklung eines Hochvolt-Prüfstands für Elektromotoren bis 300 kW / 800 V DC. Automatisierte Dauerlauferprobung (2.000h), Wirkungsgradmessung, NVH-Analyse, Temperaturzyklen -40°C bis +150°C.",
+          "id": "bb000002-0001-4000-b000-000000000001",
+          "name": "ChirurgieRoboter NeuroAssist 3.0",
+          "beschreibung": "Weiterentwicklung des neurochirurgischen Assistenzroboters: haptisches Feedback, Sub-Millimeter Präzision, Integration in OP-Saal Navigation (Brainlab). CE-MDR Klasse III Zulassung.",
           "status": "aktiv",
-          "startDatum": "2026-06-01",
-          "endDatum": "2027-06-30",
-          "sollKosten": 420000,
+          "startDatum": "2025-03-01",
+          "endDatum": "2027-09-30",
+          "sollKosten": 2400000,
           "arbeitspakete": [
             {
-              "id": "c0000004-0401-4000-a000-000000000001",
-              "name": "Anforderungen & Normenrecherche",
-              "beschreibung": "Anforderungskatalog, Normenrecherche (ISO 21498, IEC 60034, LV 124), Sicherheitskonzept Hochvolt (DGUV), Raumplanung Prüffeld.",
+              "id": "cc000004-0001-4000-b000-000000000001",
+              "name": "Klinische Anforderungen & Design Input",
+              "beschreibung": "Hospitationen Neurochirurgie (4 Kliniken), Use-Case-Definition, Design-Input-Dokument, Risikomanagement nach ISO 14971.",
+              "status": "abgeschlossen",
+              "startDatum": "2025-03-01",
+              "endDatum": "2025-08-31",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000004-0011-4000-b000-000000000001",
+                  "name": "User Research & Use Cases",
+                  "beschreibung": "Hospitationen, Chirurgen-Interviews, Workflow-Analyse, Usability-Anforderungen, Bedienergruppen-Definition.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2025-03-01",
+                  "endDatum": "2025-06-30"
+                },
+                {
+                  "id": "cc000004-0012-4000-b000-000000000002",
+                  "name": "Risikomanagement & FMEA",
+                  "beschreibung": "Gefährdungsanalyse, FMEA (System/Prozess), Risikobewertung, Maßnahmen-Katalog, Restrisiko-Akzeptanz.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2025-05-01",
+                  "endDatum": "2025-08-31"
+                }
+              ]
+            },
+            {
+              "id": "cc000004-0002-4000-b000-000000000002",
+              "name": "Robotik-Hardware & Kinematik",
+              "beschreibung": "7-Achs-Roboterarm (Nutzlast 3 kg), Direktantriebe (bürstenlose DC-Motoren), Kraft/Momenten-Sensorik, haptisches Feedback, Sterilisierbarkeit.",
               "status": "in_bearbeitung",
-              "startDatum": "2026-06-01",
-              "endDatum": "2026-08-31",
-              "unterArbeitspakete": []
+              "startDatum": "2025-07-01",
+              "endDatum": "2026-06-30",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000004-0021-4000-b000-000000000001",
+                  "name": "Antriebstechnik & Sensorik",
+                  "beschreibung": "Motorenauswahl, Getriebe (Harmonic Drive), Encoder (23-Bit), Kraft/Momenten-Sensoren, EMV-Konformität.",
+                  "status": "in_bearbeitung",
+                  "startDatum": "2025-07-01",
+                  "endDatum": "2026-02-28"
+                },
+                {
+                  "id": "cc000004-0022-4000-b000-000000000002",
+                  "name": "Haptik-Modul & Sterildesign",
+                  "beschreibung": "Impedanzregelung, Force-Feedback-Algorithmus, Autoklavierbare Gelenkabdeckungen, Biokompatibilitätstest nach ISO 10993.",
+                  "status": "offen",
+                  "startDatum": "2026-01-01",
+                  "endDatum": "2026-06-30"
+                }
+              ]
             },
             {
-              "id": "c0000004-0402-4000-a000-000000000002",
-              "name": "Mechanischer Prüfstandsaufbau",
-              "beschreibung": "T-Nuten-Fundamentplatte, Prüflings-Aufnahme, Lastmaschine (AVL e-Motor), Kühlwasserkreislauf, Abgasabsaugung, Schwingungsisolierung.",
+              "id": "cc000004-0003-4000-b000-000000000003",
+              "name": "Steuerungssoftware & Navigation",
+              "beschreibung": "Echtzeit-Steuerung (1 kHz), Bahnplanung, Kollisionsvermeidung, Integration Brainlab-Navigation (DICOM), Registrierung Patient/Roboter.",
               "status": "offen",
-              "startDatum": "2026-08-01",
-              "endDatum": "2026-12-31",
+              "startDatum": "2026-03-01",
+              "endDatum": "2027-01-31",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000004-0403-4000-a000-000000000003",
-              "name": "Leistungselektronik & Messtechnik",
-              "beschreibung": "HV-Batterie-Simulator (800V/600A), Leistungsmessgerät Yokogawa WT5000, Drehmoment-Messflansch HBM T40, Temperatur-Messkette (64 Kanäle), Datenlogger.",
+              "id": "cc000004-0004-4000-b000-000000000004",
+              "name": "Softwarevalidierung (IEC 62304)",
+              "beschreibung": "Software-Lifecycle nach IEC 62304, Unit-Tests, Integrationstests, Systemtests, Cybersecurity-Assessment nach IEC 81001-5-1.",
               "status": "offen",
-              "startDatum": "2026-10-01",
-              "endDatum": "2027-03-31",
+              "startDatum": "2026-09-01",
+              "endDatum": "2027-04-30",
               "unterArbeitspakete": []
             },
             {
-              "id": "c0000004-0404-4000-a000-000000000004",
-              "name": "Automatisierung & Prüfabläufe",
-              "beschreibung": "Prüfstandssteuerung (NI LabVIEW / dSPACE), automatisierte Prüfabläufe (Kennfeld, Dauerlauf, Temperaturzyklus), Datenbank-Anbindung, Report-Generierung.",
+              "id": "cc000004-0005-4000-b000-000000000005",
+              "name": "Klinische Bewertung & CE-MDR",
+              "beschreibung": "Klinische Bewertung, Bench-Tests, Tier-Studien (Schwein), First-in-Human Studie (3 Zentren), Technische Dokumentation, Benannte Stelle (TÜV SÜD).",
               "status": "offen",
               "startDatum": "2027-01-01",
-              "endDatum": "2027-05-31",
-              "unterArbeitspakete": []
-            },
-            {
-              "id": "c0000004-0405-4000-a000-000000000005",
-              "name": "Validierung & Akkreditierung",
-              "beschreibung": "Prüfstands-Qualifizierung (MSA), Messunsicherheitsbudget, Korrelationsmessungen mit Kunden-Prüfstand, Vorbereitung DAkkS-Akkreditierung.",
-              "status": "offen",
-              "startDatum": "2027-04-01",
-              "endDatum": "2027-06-30",
+              "endDatum": "2027-09-30",
               "unterArbeitspakete": []
             }
           ],
           "externeEntwicklungen": [
             {
-              "id": "ee-00000002-0001-4000-a000-000000000001",
-              "name": "HV-Batterie-Simulator 800V/600A",
-              "auftragnehmer": "AVL List GmbH",
-              "auftragswert": 145000,
-              "foerderquote": 35,
-              "status": "beauftragt",
-              "beschreibung": "Bidirektionaler Hochvolt-Batterie-Simulator mit 480 kW Dauerleistung, Fahrzyklus-Nachbildung, CAN-/EtherCAT-Schnittstelle. Inkl. Inbetriebnahme und Schulung.",
+              "id": "ee000004-0001-4000-b000-000000000001",
+              "name": "Sterile Gelenkabdeckungen (Silikon-Balg)",
+              "auftragnehmer": "Freudenberg Medical GmbH",
+              "auftragswert": 185000,
+              "foerderquote": 25,
+              "status": "aktiv",
+              "beschreibung": "Autoklavierbare Silikon-Balgabdeckungen für alle 7 Gelenke. Biokompatibilität ISO 10993, 500 Autoklavierzyklen, transparentes Material für Sichtkontrolle.",
               "dokumentIds": [],
-              "createdAt": "2026-07-01T09:00:00.000Z"
+              "createdAt": "2025-09-01T08:00:00.000Z"
+            },
+            {
+              "id": "ee000004-0002-4000-b000-000000000002",
+              "name": "6-Achs Kraft/Momenten-Sensor (Miniatur)",
+              "auftragnehmer": "ATI Industrial Automation",
+              "auftragswert": 92000,
+              "foerderquote": 30,
+              "status": "beauftragt",
+              "beschreibung": "Miniatur 6-Achs F/T-Sensor (Ø 40 mm) mit medizinischer Zulassung. Messbereich ±50N / ±2Nm, Auflösung 0,01N, Überlaststop, EtherCAT-Schnittstelle.",
+              "dokumentIds": [],
+              "createdAt": "2025-11-01T10:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "bb000002-0002-4000-b000-000000000002",
+          "name": "KI-Patientenmonitoring VITAL.ai",
+          "beschreibung": "KI-basiertes Patientenüberwachungssystem für Intensivstationen: Echtzeit-Analyse von 12-Kanal EKG, SpO2, Blutdruck, Beatmungsparametern. Frühwarnung Sepsis/Kreislaufversagen, MDR Klasse IIb.",
+          "status": "aktiv",
+          "startDatum": "2025-10-01",
+          "endDatum": "2027-03-31",
+          "sollKosten": 1600000,
+          "arbeitspakete": [
+            {
+              "id": "cc000005-0001-4000-b000-000000000001",
+              "name": "Datenakquisition & Annotation",
+              "beschreibung": "Kooperation 5 Unikliniken, anonymisierte Patientendaten (50.000 Aufenthalte), Annotations-Team (12 Ärzte), Datenqualitätssicherung.",
+              "status": "abgeschlossen",
+              "startDatum": "2025-10-01",
+              "endDatum": "2026-03-31",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000005-0002-4000-b000-000000000002",
+              "name": "KI-Modellentwicklung",
+              "beschreibung": "Transformer-Architektur für Zeitreihen-Analyse, Training auf GPU-Cluster (8× A100), Hyperparameter-Optimierung, Kreuzvalidierung, Bias-Analyse.",
+              "status": "in_bearbeitung",
+              "startDatum": "2026-01-01",
+              "endDatum": "2026-09-30",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000005-0021-4000-b000-000000000001",
+                  "name": "Feature Engineering & Vorverarbeitung",
+                  "beschreibung": "Signal-Filterung, Artefakt-Erkennung, Feature-Extraktion (HRV, QRS-Morphologie), Normalisierung, Fensterung.",
+                  "status": "abgeschlossen",
+                  "startDatum": "2026-01-01",
+                  "endDatum": "2026-04-30"
+                },
+                {
+                  "id": "cc000005-0022-4000-b000-000000000002",
+                  "name": "Modelltraining & Validierung",
+                  "beschreibung": "Multi-Task-Learning (Sepsis + Kreislauf + Arrhythmie), AUROC > 0.95, Sensitivität > 90%, Spezifität > 85%, externe Validierung.",
+                  "status": "in_bearbeitung",
+                  "startDatum": "2026-04-01",
+                  "endDatum": "2026-09-30"
+                }
+              ]
+            },
+            {
+              "id": "cc000005-0003-4000-b000-000000000003",
+              "name": "Edge-Hardware & Klinik-Integration",
+              "beschreibung": "Embedded-System (NVIDIA Jetson), HL7-FHIR Schnittstelle, Anbindung Patientenmonitore (Philips/GE), Alarmsystem, PDMS-Integration.",
+              "status": "offen",
+              "startDatum": "2026-07-01",
+              "endDatum": "2027-01-31",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000005-0004-4000-b000-000000000004",
+              "name": "Klinische Studie & Zulassung",
+              "beschreibung": "Prospektive Studie (3 Zentren, 500 Patienten), Ethikvotum, Datenauswertung, klinischer Nutzennachweis, CE-MDR Klasse IIb.",
+              "status": "offen",
+              "startDatum": "2026-10-01",
+              "endDatum": "2027-03-31",
+              "unterArbeitspakete": []
+            }
+          ],
+          "externeEntwicklungen": [
+            {
+              "id": "ee000005-0001-4000-b000-000000000001",
+              "name": "HL7-FHIR Integrationsmodul",
+              "auftragnehmer": "InterSystems GmbH",
+              "auftragswert": 78000,
+              "foerderquote": 25,
+              "status": "beauftragt",
+              "beschreibung": "Bidirektionale HL7-FHIR R4 Schnittstelle für Datenimport (Patient, Observation, Device) und Alarmweiterleitung. SMART on FHIR Auth.",
+              "dokumentIds": [],
+              "createdAt": "2026-05-15T09:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "bb000002-0003-4000-b000-000000000003",
+          "name": "3D-Biodruck Gewebemodelle",
+          "beschreibung": "Forschungsprojekt: Entwicklung eines 3D-Biodruckers für patientenspezifische Gewebemodelle (Knochen, Knorpel) aus autologen Stammzellen. Kooperation mit TU München und Charité Berlin.",
+          "status": "geplant",
+          "startDatum": "2027-07-01",
+          "endDatum": "2030-06-30",
+          "sollKosten": 3200000,
+          "arbeitspakete": [
+            {
+              "id": "cc000006-0001-4000-b000-000000000001",
+              "name": "Biomaterial-Entwicklung",
+              "beschreibung": "Hydrogelformulierungen (GelMA, Alginat, HA), Biokompatibilitätstests, Rheologie-Optimierung, Vernetzungskinetik, Zellviabilität > 90%.",
+              "status": "offen",
+              "startDatum": "2027-07-01",
+              "endDatum": "2028-06-30",
+              "unterArbeitspakete": [
+                {
+                  "id": "cc000006-0011-4000-b000-000000000001",
+                  "name": "Hydrogel-Synthese & Charakterisierung",
+                  "beschreibung": "GelMA-Synthese (verschiedene DS), Rheologie, Druckbarkeits-Screening, UV-Vernetzung Optimierung.",
+                  "status": "offen",
+                  "startDatum": "2027-07-01",
+                  "endDatum": "2028-01-31"
+                },
+                {
+                  "id": "cc000006-0012-4000-b000-000000000002",
+                  "name": "Zellkultur & Biokompatibilität",
+                  "beschreibung": "MSC-Isolation, Expansion, Differenzierung (osteogen/chondrogen), Live/Dead-Assay, Proliferationstest.",
+                  "status": "offen",
+                  "startDatum": "2027-10-01",
+                  "endDatum": "2028-06-30"
+                }
+              ]
+            },
+            {
+              "id": "cc000006-0002-4000-b000-000000000002",
+              "name": "Biodruckplattform Entwicklung",
+              "beschreibung": "Extrusionsdrucker (3 Druckköpfe), Temperatursteuerung (4–37°C), Steriler Druckraum (ISO 5), Software (G-Code + Bioprint-Modul).",
+              "status": "offen",
+              "startDatum": "2028-01-01",
+              "endDatum": "2029-03-31",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000006-0003-4000-b000-000000000003",
+              "name": "In-vivo Validierung",
+              "beschreibung": "Tiermodell (Kaninchen), Implantation gedruckter Knochenersatz, Histologie, µCT-Monitoring, 12-Wochen Follow-up.",
+              "status": "offen",
+              "startDatum": "2029-01-01",
+              "endDatum": "2029-12-31",
+              "unterArbeitspakete": []
+            },
+            {
+              "id": "cc000006-0004-4000-b000-000000000004",
+              "name": "Regulatorik & Publikation",
+              "beschreibung": "ATMP-Klassifizierung (EMA), GMP-Anforderungen, Peer-Review Publikationen (Nature Biomedical Engineering), Patentanmeldungen.",
+              "status": "offen",
+              "startDatum": "2029-06-01",
+              "endDatum": "2030-06-30",
+              "unterArbeitspakete": []
             }
           ]
         }
@@ -349,418 +569,890 @@
   ],
   "mitarbeiter": [
     {
-      "id": "d0000001-0001-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Dipl.-Ing. Klaus Berger",
-      "position": "Projektleiter / Technische Leitung",
+      "id": "dd000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Dr. Henrik Larsson",
+      "position": "Geschäftsführer / Projektleitung",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
-      "jahresgehalt": 92000,
-      "lohnnebenkosten": 18400,
+      "jahresgehalt": 105000,
+      "lohnnebenkosten": 21000,
       "blockierungen": [
-        { "id": "e0000001-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2026-08-03", "bis": "2026-08-21", "notiz": "Sommerurlaub Kroatien" },
-        { "id": "e0000001-0002-4000-a000-000000000002", "typ": "krank", "von": "2025-11-10", "bis": "2025-11-14", "notiz": "" },
-        { "id": "e0000001-0003-4000-a000-000000000003", "typ": "urlaub", "von": "2025-12-22", "bis": "2025-12-31", "notiz": "Weihnachtsurlaub" },
-        { "id": "e0000001-0004-4000-a000-000000000004", "typ": "urlaub", "von": "2027-04-07", "bis": "2027-04-18", "notiz": "Osterurlaub" }
+        { "id": "ee100001-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-07-20", "bis": "2026-08-07", "notiz": "Sommerurlaub Schweden" },
+        { "id": "ee100001-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2025-12-22", "bis": "2025-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee100001-0003-4000-b000-000000000003", "typ": "krank", "von": "2026-02-09", "bis": "2026-02-13", "notiz": "Grippe" }
       ]
     },
     {
-      "id": "d0000001-0002-4000-a000-000000000002",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Dr.-Ing. Petra Hartmann",
-      "position": "Konstruktionsleiterin",
+      "id": "dd000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Dipl.-Ing. Frauke Petersen",
+      "position": "Projektleiterin Windpark",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
       "jahresgehalt": 88000,
       "lohnnebenkosten": 17600,
       "blockierungen": [
-        { "id": "e0000002-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-07-21", "bis": "2025-08-08", "notiz": "Sommerurlaub" },
-        { "id": "e0000002-0002-4000-a000-000000000002", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" },
-        { "id": "e0000002-0003-4000-a000-000000000003", "typ": "urlaub", "von": "2026-07-06", "bis": "2026-07-17", "notiz": "Italien" },
-        { "id": "e0000002-0004-4000-a000-000000000004", "typ": "krank", "von": "2026-11-03", "bis": "2026-11-04", "notiz": "" }
+        { "id": "ee100002-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-08-10", "bis": "2026-08-28", "notiz": "Sommerurlaub Dänemark" },
+        { "id": "ee100002-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-04-14", "bis": "2026-04-16", "notiz": "" },
+        { "id": "ee100002-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-03-29", "bis": "2027-04-09", "notiz": "Osterurlaub" }
       ]
     },
     {
-      "id": "d0000001-0003-4000-a000-000000000003",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Thomas Keller",
-      "position": "SPS-Programmierer / Automatisierung",
+      "id": "dd000001-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Björn Weiland",
+      "position": "Elektroingenieur / Netzanbindung",
       "wochenStunden": 40,
       "jahresUrlaub": 28,
+      "feiertagePflicht": true,
+      "jahresgehalt": 76000,
+      "lohnnebenkosten": 15200,
+      "blockierungen": [
+        { "id": "ee100003-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-12-22", "bis": "2026-01-02", "notiz": "Weihnachten/Neujahr" },
+        { "id": "ee100003-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-10-19", "bis": "2026-10-23", "notiz": "Erkältung" },
+        { "id": "ee100003-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-07-14", "bis": "2027-07-25", "notiz": "Sommerurlaub" }
+      ]
+    },
+    {
+      "id": "dd000001-0004-4000-b000-000000000004",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Marina Köhler",
+      "position": "Umweltingenieurin / Genehmigungen",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
       "feiertagePflicht": true,
       "jahresgehalt": 72000,
       "lohnnebenkosten": 14400,
       "blockierungen": [
-        { "id": "e0000003-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-12-22", "bis": "2026-01-02", "notiz": "Weihnachten/Neujahr" },
-        { "id": "e0000003-0002-4000-a000-000000000002", "typ": "krank", "von": "2026-03-09", "bis": "2026-03-13", "notiz": "Grippe" },
-        { "id": "e0000003-0003-4000-a000-000000000003", "typ": "urlaub", "von": "2026-06-15", "bis": "2026-06-26", "notiz": "Pfingsturlaub" }
+        { "id": "ee100004-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-10-06", "bis": "2025-10-17", "notiz": "Herbstferien" },
+        { "id": "ee100004-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2026-06-15", "bis": "2026-06-26", "notiz": "Pfingsturlaub verlängert" },
+        { "id": "ee100004-0003-4000-b000-000000000003", "typ": "krank", "von": "2026-11-09", "bis": "2026-11-10", "notiz": "" }
       ]
     },
     {
-      "id": "d0000001-0004-4000-a000-000000000004",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Sabine Wolf",
-      "position": "Mechanische Konstrukteurin (SolidWorks)",
+      "id": "dd000001-0005-4000-b000-000000000005",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Stefan Brandt",
+      "position": "Bauingenieur / Fundamentbau",
+      "wochenStunden": 40,
+      "jahresUrlaub": 28,
+      "feiertagePflicht": true,
+      "jahresgehalt": 70000,
+      "lohnnebenkosten": 14000,
+      "blockierungen": [
+        { "id": "ee100005-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-08-03", "bis": "2026-08-14", "notiz": "Sommerurlaub Mallorca" },
+        { "id": "ee100005-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-01-26", "bis": "2026-01-30", "notiz": "Rücken" },
+        { "id": "ee100005-0003-4000-b000-000000000003", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" }
+      ]
+    },
+    {
+      "id": "dd000001-0006-4000-b000-000000000006",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Lisa Engel",
+      "position": "Energiespeicher-Ingenieurin",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 78000,
+      "lohnnebenkosten": 15600,
+      "blockierungen": [
+        { "id": "ee100006-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-07-06", "bis": "2026-07-17", "notiz": "Sommerurlaub" },
+        { "id": "ee100006-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-03-16", "bis": "2026-03-18", "notiz": "" },
+        { "id": "ee100006-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-12-20", "bis": "2027-12-31", "notiz": "Weihnachtsurlaub" }
+      ]
+    },
+    {
+      "id": "dd000001-0007-4000-b000-000000000007",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Tobias Jansen",
+      "position": "SCADA-Ingenieur / IT",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 74000,
+      "lohnnebenkosten": 14800,
+      "blockierungen": [
+        { "id": "ee100007-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2027-08-02", "bis": "2027-08-20", "notiz": "Sommerurlaub Norwegen" },
+        { "id": "ee100007-0002-4000-b000-000000000002", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" },
+        { "id": "ee100007-0003-4000-b000-000000000003", "typ": "krank", "von": "2027-01-12", "bis": "2027-01-14", "notiz": "" }
+      ]
+    },
+    {
+      "id": "dd000001-0008-4000-b000-000000000008",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Kathrin Vogel",
+      "position": "Drohnen-Pilotin / Sensorik",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
       "jahresgehalt": 68000,
       "lohnnebenkosten": 13600,
       "blockierungen": [
-        { "id": "e0000004-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-04-14", "bis": "2025-04-25", "notiz": "Osterurlaub" },
-        { "id": "e0000004-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2025-10-13", "bis": "2025-10-17", "notiz": "Herbstferien" },
-        { "id": "e0000004-0003-4000-a000-000000000003", "typ": "krank", "von": "2026-01-19", "bis": "2026-01-20", "notiz": "" }
+        { "id": "ee100008-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2028-06-19", "bis": "2028-07-05", "notiz": "Sommerurlaub" },
+        { "id": "ee100008-0002-4000-b000-000000000002", "typ": "krank", "von": "2027-11-06", "bis": "2027-11-08", "notiz": "" }
       ]
     },
     {
-      "id": "d0000001-0005-4000-a000-000000000005",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Michael Braun",
-      "position": "Elektroingenieur / IoT",
-      "wochenStunden": 35,
+      "id": "dd000001-0009-4000-b000-000000000009",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Niklas Freiberg",
+      "position": "Montageingenieur / Turbinen",
+      "wochenStunden": 40,
       "jahresUrlaub": 28,
-      "feiertagePflicht": false,
-      "jahresgehalt": 74000,
-      "lohnnebenkosten": 14800,
+      "feiertagePflicht": true,
+      "jahresgehalt": 65000,
+      "lohnnebenkosten": 13000,
       "blockierungen": [
-        { "id": "e0000005-0001-4000-a000-000000000001", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-17", "notiz": "Karneval (Rosenmontag/Veilchendienstag)" },
-        { "id": "e0000005-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2026-09-07", "bis": "2026-09-18", "notiz": "Herbsturlaub" },
-        { "id": "e0000005-0003-4000-a000-000000000003", "typ": "feiertag", "von": "2025-11-11", "bis": "2025-11-11", "notiz": "Karnevalsauftakt (11.11.)" },
-        { "id": "e0000005-0004-4000-a000-000000000004", "typ": "urlaub", "von": "2027-03-29", "bis": "2027-04-09", "notiz": "Osterurlaub" }
+        { "id": "ee100009-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-12-21", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee100009-0002-4000-b000-000000000002", "typ": "krank", "von": "2027-03-08", "bis": "2027-03-12", "notiz": "Knie-OP" },
+        { "id": "ee100009-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-08-09", "bis": "2027-08-20", "notiz": "Sommerurlaub" }
       ]
     },
     {
-      "id": "d0000001-0006-4000-a000-000000000006",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Anna Zimmermann",
-      "position": "Robotik-Ingenieurin",
+      "id": "dd000001-0010-4000-b000-000000000010",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Carla Richter",
+      "position": "Projektcontrolling / Fördermittel",
+      "wochenStunden": 32,
+      "jahresUrlaub": 28,
+      "feiertagePflicht": true,
+      "jahresgehalt": 58000,
+      "lohnnebenkosten": 11600,
+      "blockierungen": [
+        { "id": "ee100010-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-12-22", "bis": "2025-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee100010-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2026-10-05", "bis": "2026-10-16", "notiz": "Herbstferien" },
+        { "id": "ee100010-0003-4000-b000-000000000003", "typ": "krank", "von": "2026-05-18", "bis": "2026-05-19", "notiz": "" },
+        { "id": "ee100010-0004-4000-b000-000000000004", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" }
+      ]
+    },
+    {
+      "id": "dd000001-0011-4000-b000-000000000011",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Moritz Hahn",
+      "position": "Werkstudent Elektrotechnik",
+      "wochenStunden": 20,
+      "jahresUrlaub": 24,
+      "feiertagePflicht": true,
+      "jahresgehalt": 24000,
+      "lohnnebenkosten": 4800,
+      "blockierungen": [
+        { "id": "ee100011-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-02-16", "bis": "2026-02-27", "notiz": "Semesterferien" },
+        { "id": "ee100011-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2026-08-03", "bis": "2026-08-14", "notiz": "Semesterferien" }
+      ]
+    },
+    {
+      "id": "dd000001-0012-4000-b000-000000000012",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "name": "Julia Siebert",
+      "position": "KI-Entwicklerin / Machine Learning",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": false,
+      "jahresgehalt": 82000,
+      "lohnnebenkosten": 16400,
+      "blockierungen": [
+        { "id": "ee100012-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2027-07-21", "bis": "2027-08-08", "notiz": "Sommerurlaub Kanada" },
+        { "id": "ee100012-0002-4000-b000-000000000002", "typ": "krank", "von": "2028-03-04", "bis": "2028-03-06", "notiz": "" },
+        { "id": "ee100012-0003-4000-b000-000000000003", "typ": "feiertag", "von": "2027-11-01", "bis": "2027-11-01", "notiz": "Allerheiligen (Bayern)" }
+      ]
+    },
+    {
+      "id": "dd000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Prof. Dr. med. Eva Steinbach",
+      "position": "VP Engineering / Chief Medical Advisor",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 145000,
+      "lohnnebenkosten": 29000,
+      "blockierungen": [
+        { "id": "ee200001-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-08-03", "bis": "2026-08-21", "notiz": "Sommerurlaub Toskana" },
+        { "id": "ee200001-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2025-12-22", "bis": "2025-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee200001-0003-4000-b000-000000000003", "typ": "krank", "von": "2026-03-09", "bis": "2026-03-11", "notiz": "" }
+      ]
+    },
+    {
+      "id": "dd000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Dr.-Ing. Markus Weber",
+      "position": "Leiter Robotik-Entwicklung",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 110000,
+      "lohnnebenkosten": 22000,
+      "blockierungen": [
+        { "id": "ee200002-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-07-14", "bis": "2025-08-01", "notiz": "Sommerurlaub Griechenland" },
+        { "id": "ee200002-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-01-19", "bis": "2026-01-21", "notiz": "" },
+        { "id": "ee200002-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2026-12-21", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" }
+      ]
+    },
+    {
+      "id": "dd000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Sandra Hoffmann",
+      "position": "Mechatronik-Ingenieurin",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
       "jahresgehalt": 82000,
       "lohnnebenkosten": 16400,
       "blockierungen": [
-        { "id": "e0000006-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2027-06-21", "bis": "2027-07-09", "notiz": "Sommerurlaub Japan" },
-        { "id": "e0000006-0002-4000-a000-000000000002", "typ": "krank", "von": "2027-10-06", "bis": "2027-10-08", "notiz": "" },
-        { "id": "e0000006-0003-4000-a000-000000000003", "typ": "urlaub", "von": "2028-08-05", "bis": "2028-08-23", "notiz": "Sommerurlaub" }
+        { "id": "ee200003-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-04-06", "bis": "2026-04-17", "notiz": "Osterurlaub" },
+        { "id": "ee200003-0002-4000-b000-000000000002", "typ": "krank", "von": "2025-11-17", "bis": "2025-11-21", "notiz": "Erkältung" },
+        { "id": "ee200003-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2026-08-10", "bis": "2026-08-21", "notiz": "Sommerurlaub" }
       ]
     },
     {
-      "id": "d0000001-0007-4000-a000-000000000007",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Jürgen Schmitz",
-      "position": "Werkstattleiter Montage",
+      "id": "dd000002-0004-4000-b000-000000000004",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Alexander Roth",
+      "position": "Software-Architekt (Embedded)",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
-      "jahresgehalt": 62000,
-      "lohnnebenkosten": 12400,
+      "jahresgehalt": 95000,
+      "lohnnebenkosten": 19000,
       "blockierungen": [
-        { "id": "e0000007-0001-4000-a000-000000000001", "typ": "krank", "von": "2026-01-12", "bis": "2026-01-16", "notiz": "Rücken" },
-        { "id": "e0000007-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2026-08-03", "bis": "2026-08-14", "notiz": "Sommerurlaub" },
-        { "id": "e0000007-0003-4000-a000-000000000003", "typ": "urlaub", "von": "2027-12-20", "bis": "2027-12-31", "notiz": "Weihnachtsurlaub" },
-        { "id": "e0000007-0004-4000-a000-000000000004", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" }
+        { "id": "ee200004-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-07-20", "bis": "2026-08-07", "notiz": "Sommerurlaub Portugal" },
+        { "id": "ee200004-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-11-23", "bis": "2026-11-25", "notiz": "" },
+        { "id": "ee200004-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-04-05", "bis": "2027-04-16", "notiz": "Osterurlaub" }
       ]
     },
     {
-      "id": "d0000001-0008-4000-a000-000000000008",
-      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
-      "name": "Lena Fischer",
-      "position": "QA / Messtechnik-Ingenieurin",
-      "wochenStunden": 32,
+      "id": "dd000002-0005-4000-b000-000000000005",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Dr. rer. nat. Yuki Tanaka",
+      "position": "Data Scientist / KI",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 92000,
+      "lohnnebenkosten": 18400,
+      "blockierungen": [
+        { "id": "ee200005-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-05-04", "bis": "2026-05-15", "notiz": "Japan-Besuch Familie" },
+        { "id": "ee200005-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2026-12-21", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee200005-0003-4000-b000-000000000003", "typ": "krank", "von": "2026-09-14", "bis": "2026-09-16", "notiz": "" }
+      ]
+    },
+    {
+      "id": "dd000002-0006-4000-b000-000000000006",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Felix Grundmann",
+      "position": "Regulatory Affairs Manager",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 85000,
+      "lohnnebenkosten": 17000,
+      "blockierungen": [
+        { "id": "ee200006-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-08-04", "bis": "2025-08-22", "notiz": "Sommerurlaub Kreta" },
+        { "id": "ee200006-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-02-02", "bis": "2026-02-04", "notiz": "" },
+        { "id": "ee200006-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2026-12-23", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee200006-0004-4000-b000-000000000004", "typ": "feiertag", "von": "2026-11-01", "bis": "2026-11-01", "notiz": "Allerheiligen (Bayern)" }
+      ]
+    },
+    {
+      "id": "dd000002-0007-4000-b000-000000000007",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Leonie Krause",
+      "position": "Biomedical Engineer",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 78000,
+      "lohnnebenkosten": 15600,
+      "blockierungen": [
+        { "id": "ee200007-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-06-22", "bis": "2026-07-03", "notiz": "Sommerurlaub" },
+        { "id": "ee200007-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-10-12", "bis": "2026-10-14", "notiz": "" },
+        { "id": "ee200007-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-08-02", "bis": "2027-08-13", "notiz": "Sommerurlaub Kroatien" }
+      ]
+    },
+    {
+      "id": "dd000002-0008-4000-b000-000000000008",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Jan-Philipp Meier",
+      "position": "Klinischer Studienkoordinator",
+      "wochenStunden": 40,
       "jahresUrlaub": 28,
       "feiertagePflicht": true,
-      "jahresgehalt": 56000,
-      "lohnnebenkosten": 11200,
+      "jahresgehalt": 72000,
+      "lohnnebenkosten": 14400,
       "blockierungen": [
-        { "id": "e0000008-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-10-20", "bis": "2025-10-31", "notiz": "Herbstferien" },
-        { "id": "e0000008-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2026-10-05", "bis": "2026-10-16", "notiz": "Herbstferien" },
-        { "id": "e0000008-0003-4000-a000-000000000003", "typ": "krank", "von": "2027-02-08", "bis": "2027-02-10", "notiz": "" }
+        { "id": "ee200008-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-03-30", "bis": "2026-04-10", "notiz": "Osterurlaub" },
+        { "id": "ee200008-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-06-08", "bis": "2026-06-10", "notiz": "" },
+        { "id": "ee200008-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2026-12-21", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" }
       ]
     },
     {
-      "id": "d0000001-0009-4000-a000-000000000009",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Dirk Neumann",
-      "position": "CAD-Konstrukteur (Werkstudent)",
+      "id": "dd000002-0009-4000-b000-000000000009",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Nina Bergmann",
+      "position": "QM-Ingenieurin / Validierung",
+      "wochenStunden": 40,
+      "jahresUrlaub": 30,
+      "feiertagePflicht": true,
+      "jahresgehalt": 75000,
+      "lohnnebenkosten": 15000,
+      "blockierungen": [
+        { "id": "ee200009-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2025-10-13", "bis": "2025-10-24", "notiz": "Herbstferien" },
+        { "id": "ee200009-0002-4000-b000-000000000002", "typ": "krank", "von": "2026-07-13", "bis": "2026-07-15", "notiz": "" },
+        { "id": "ee200009-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2027-07-19", "bis": "2027-08-06", "notiz": "Sommerurlaub" }
+      ]
+    },
+    {
+      "id": "dd000002-0010-4000-b000-000000000010",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Tim Schreiber",
+      "position": "Hardware-Entwickler (PCB/FPGA)",
+      "wochenStunden": 40,
+      "jahresUrlaub": 28,
+      "feiertagePflicht": true,
+      "jahresgehalt": 80000,
+      "lohnnebenkosten": 16000,
+      "blockierungen": [
+        { "id": "ee200010-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2026-08-17", "bis": "2026-08-28", "notiz": "Sommerurlaub" },
+        { "id": "ee200010-0002-4000-b000-000000000002", "typ": "krank", "von": "2025-12-01", "bis": "2025-12-03", "notiz": "" },
+        { "id": "ee200010-0003-4000-b000-000000000003", "typ": "urlaub", "von": "2026-12-23", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" }
+      ]
+    },
+    {
+      "id": "dd000002-0011-4000-b000-000000000011",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Sophie Brenner",
+      "position": "Werkstudentin Biomaterialien",
       "wochenStunden": 20,
       "jahresUrlaub": 24,
       "feiertagePflicht": true,
-      "jahresgehalt": 28000,
-      "lohnnebenkosten": 5600,
+      "jahresgehalt": 26000,
+      "lohnnebenkosten": 5200,
       "blockierungen": [
-        { "id": "e0000009-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-08-04", "bis": "2025-08-15", "notiz": "Semesterferien" },
-        { "id": "e0000009-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2025-02-24", "bis": "2025-03-07", "notiz": "Klausurenphase" }
+        { "id": "ee200011-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2027-08-02", "bis": "2027-08-13", "notiz": "Semesterferien" },
+        { "id": "ee200011-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2028-02-12", "bis": "2028-02-23", "notiz": "Klausurenphase" }
       ]
     },
     {
-      "id": "d0000001-0010-4000-a000-000000000010",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "name": "Martina Schäfer",
-      "position": "Projektcontrolling / Fördermittel",
+      "id": "dd000002-0012-4000-b000-000000000012",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "name": "Dr. Michael Chang",
+      "position": "Principal Scientist Bioprinting",
       "wochenStunden": 40,
       "jahresUrlaub": 30,
       "feiertagePflicht": true,
-      "jahresgehalt": 65000,
-      "lohnnebenkosten": 13000,
+      "jahresgehalt": 105000,
+      "lohnnebenkosten": 21000,
       "blockierungen": [
-        { "id": "e0000010-0001-4000-a000-000000000001", "typ": "urlaub", "von": "2025-12-22", "bis": "2025-12-31", "notiz": "Weihnachtsurlaub" },
-        { "id": "e0000010-0002-4000-a000-000000000002", "typ": "urlaub", "von": "2026-12-21", "bis": "2026-12-31", "notiz": "Weihnachtsurlaub" },
-        { "id": "e0000010-0003-4000-a000-000000000003", "typ": "krank", "von": "2026-04-20", "bis": "2026-04-21", "notiz": "" },
-        { "id": "e0000010-0004-4000-a000-000000000004", "typ": "feiertag", "von": "2026-02-16", "bis": "2026-02-16", "notiz": "Rosenmontag" }
+        { "id": "ee200012-0001-4000-b000-000000000001", "typ": "urlaub", "von": "2027-12-20", "bis": "2027-12-31", "notiz": "Weihnachtsurlaub" },
+        { "id": "ee200012-0002-4000-b000-000000000002", "typ": "urlaub", "von": "2028-07-15", "bis": "2028-08-02", "notiz": "Sommerurlaub Taiwan" },
+        { "id": "ee200012-0003-4000-b000-000000000003", "typ": "krank", "von": "2028-04-03", "bis": "2028-04-05", "notiz": "" }
       ]
     }
   ],
   "zuweisungen": [
     {
-      "id": "f0000001-0001-4000-a000-000000000001",
-      "mitarbeiterId": "d0000001-0001-4000-a000-000000000001",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 60,
-      "von": "2025-01-15",
-      "bis": "2027-06-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0101-4000-a000-000000000001", "prozentAnteil": 15 },
-        { "arbeitspaketId": "c0000001-0103-4000-a000-000000000003", "prozentAnteil": 25 },
-        { "arbeitspaketId": "c0000001-0105-4000-a000-000000000005", "prozentAnteil": 25 },
-        { "arbeitspaketId": "c0000001-0106-4000-a000-000000000006", "prozentAnteil": 15 },
-        { "arbeitspaketId": "c0000001-0107-4000-a000-000000000007", "prozentAnteil": 20 }
-      ]
-    },
-    {
-      "id": "f0000001-0002-4000-a000-000000000002",
-      "mitarbeiterId": "d0000001-0002-4000-a000-000000000002",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 80,
-      "von": "2025-01-15",
-      "bis": "2025-10-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0101-4000-a000-000000000001", "prozentAnteil": 30 },
-        { "arbeitspaketId": "c0000001-0102-4000-a000-000000000002", "prozentAnteil": 70 }
-      ]
-    },
-    {
-      "id": "f0000001-0003-4000-a000-000000000003",
-      "mitarbeiterId": "d0000001-0002-4000-a000-000000000002",
-      "projektId": "b0000001-2222-4000-a000-000000000002",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 20,
-      "von": "2025-03-01",
-      "bis": "2025-05-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000002-0201-4000-a000-000000000001", "prozentAnteil": 100 }
-      ]
-    },
-    {
-      "id": "f0000001-0004-4000-a000-000000000004",
-      "mitarbeiterId": "d0000001-0003-4000-a000-000000000003",
-      "projektId": "b0000001-2222-4000-a000-000000000002",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 100,
-      "von": "2025-03-01",
-      "bis": "2025-09-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000002-0203-4000-a000-000000000003", "prozentAnteil": 70 },
-        { "arbeitspaketId": "c0000002-0204-4000-a000-000000000004", "prozentAnteil": 30 }
-      ]
-    },
-    {
-      "id": "f0000001-0005-4000-a000-000000000005",
-      "mitarbeiterId": "d0000001-0003-4000-a000-000000000003",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 100,
-      "von": "2025-10-01",
-      "bis": "2026-04-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0103-4000-a000-000000000003", "prozentAnteil": 100 }
-      ]
-    },
-    {
-      "id": "f0000001-0006-4000-a000-000000000006",
-      "mitarbeiterId": "d0000001-0004-4000-a000-000000000004",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 100,
-      "von": "2025-03-01",
-      "bis": "2025-10-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0102-4000-a000-000000000002", "prozentAnteil": 100 }
-      ]
-    },
-    {
-      "id": "f0000001-0007-4000-a000-000000000007",
-      "mitarbeiterId": "d0000001-0004-4000-a000-000000000004",
-      "projektId": "b0000001-3333-4000-a000-000000000003",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 80,
-      "von": "2027-01-15",
+      "id": "ff000001-0001-4000-b000-000000000001",
+      "mitarbeiterId": "dd000001-0001-4000-b000-000000000001",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 40,
+      "von": "2025-06-01",
       "bis": "2027-12-31",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000003-0302-4000-a000-000000000002", "prozentAnteil": 35 },
-        { "arbeitspaketId": "c0000003-0303-4000-a000-000000000003", "prozentAnteil": 65 }
+        { "arbeitspaketId": "cc000001-0001-4000-b000-000000000001", "prozentAnteil": 15 },
+        { "arbeitspaketId": "cc000001-0004-4000-b000-000000000004", "prozentAnteil": 25 },
+        { "arbeitspaketId": "cc000001-0006-4000-b000-000000000006", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000001-0005-4000-b000-000000000005", "prozentAnteil": 30 }
       ]
     },
     {
-      "id": "f0000001-0008-4000-a000-000000000008",
-      "mitarbeiterId": "d0000001-0005-4000-a000-000000000005",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 70,
-      "von": "2026-01-01",
-      "bis": "2026-08-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0104-4000-a000-000000000004", "prozentAnteil": 100 }
-      ]
-    },
-    {
-      "id": "f0000001-0009-4000-a000-000000000009",
-      "mitarbeiterId": "d0000001-0005-4000-a000-000000000005",
-      "projektId": "b0000002-4444-4000-a000-000000000004",
-      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
+      "id": "ff000001-0002-4000-b000-000000000002",
+      "mitarbeiterId": "dd000001-0001-4000-b000-000000000001",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
       "prozentAnteil": 30,
-      "von": "2026-10-01",
-      "bis": "2027-06-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000004-0403-4000-a000-000000000003", "prozentAnteil": 50 },
-        { "arbeitspaketId": "c0000004-0404-4000-a000-000000000004", "prozentAnteil": 50 }
-      ]
-    },
-    {
-      "id": "f0000001-0010-4000-a000-000000000010",
-      "mitarbeiterId": "d0000001-0006-4000-a000-000000000006",
-      "projektId": "b0000001-3333-4000-a000-000000000003",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 100,
-      "von": "2027-01-15",
-      "bis": "2028-12-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000003-0301-4000-a000-000000000001", "prozentAnteil": 15 },
-        { "arbeitspaketId": "c0000003-0304-4000-a000-000000000004", "prozentAnteil": 45 },
-        { "arbeitspaketId": "c0000003-0305-4000-a000-000000000005", "prozentAnteil": 25 },
-        { "arbeitspaketId": "c0000003-0306-4000-a000-000000000006", "prozentAnteil": 15 }
-      ]
-    },
-    {
-      "id": "f0000001-0011-4000-a000-000000000011",
-      "mitarbeiterId": "d0000001-0007-4000-a000-000000000007",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 80,
-      "von": "2026-06-01",
-      "bis": "2027-04-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0105-4000-a000-000000000005", "prozentAnteil": 55 },
-        { "arbeitspaketId": "c0000001-0106-4000-a000-000000000006", "prozentAnteil": 30 },
-        { "arbeitspaketId": "c0000001-0107-4000-a000-000000000007", "prozentAnteil": 15 }
-      ]
-    },
-    {
-      "id": "f0000001-0012-4000-a000-000000000012",
-      "mitarbeiterId": "d0000001-0007-4000-a000-000000000007",
-      "projektId": "b0000001-3333-4000-a000-000000000003",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 60,
-      "von": "2027-06-01",
-      "bis": "2028-12-31",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000003-0303-4000-a000-000000000003", "prozentAnteil": 30 },
-        { "arbeitspaketId": "c0000003-0305-4000-a000-000000000005", "prozentAnteil": 40 },
-        { "arbeitspaketId": "c0000003-0306-4000-a000-000000000006", "prozentAnteil": 30 }
-      ]
-    },
-    {
-      "id": "f0000001-0013-4000-a000-000000000013",
-      "mitarbeiterId": "d0000001-0008-4000-a000-000000000008",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 50,
       "von": "2025-09-01",
       "bis": "2027-06-30",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0106-4000-a000-000000000006", "prozentAnteil": 60 },
-        { "arbeitspaketId": "c0000001-0107-4000-a000-000000000007", "prozentAnteil": 40 }
+        { "arbeitspaketId": "cc000002-0001-4000-b000-000000000001", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000002-0005-4000-b000-000000000005", "prozentAnteil": 70 }
       ]
     },
     {
-      "id": "f0000001-0014-4000-a000-000000000014",
-      "mitarbeiterId": "d0000001-0008-4000-a000-000000000008",
-      "projektId": "b0000002-4444-4000-a000-000000000004",
-      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
-      "prozentAnteil": 50,
+      "id": "ff000001-0003-4000-b000-000000000003",
+      "mitarbeiterId": "dd000001-0001-4000-b000-000000000001",
+      "projektId": "bb000001-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 20,
       "von": "2027-04-01",
+      "bis": "2029-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000003-0001-4000-b000-000000000001", "prozentAnteil": 40 },
+        { "arbeitspaketId": "cc000003-0005-4000-b000-000000000005", "prozentAnteil": 60 }
+      ]
+    },
+    {
+      "id": "ff000001-0004-4000-b000-000000000004",
+      "mitarbeiterId": "dd000001-0002-4000-b000-000000000002",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 80,
+      "von": "2025-06-01",
+      "bis": "2027-12-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0001-4000-b000-000000000001", "prozentAnteil": 15 },
+        { "arbeitspaketId": "cc000001-0002-4000-b000-000000000002", "prozentAnteil": 15 },
+        { "arbeitspaketId": "cc000001-0003-4000-b000-000000000003", "prozentAnteil": 25 },
+        { "arbeitspaketId": "cc000001-0004-4000-b000-000000000004", "prozentAnteil": 25 },
+        { "arbeitspaketId": "cc000001-0006-4000-b000-000000000006", "prozentAnteil": 20 }
+      ]
+    },
+    {
+      "id": "ff000001-0005-4000-b000-000000000005",
+      "mitarbeiterId": "dd000001-0003-4000-b000-000000000003",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 60,
+      "von": "2026-03-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0003-4000-b000-000000000003", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000001-0004-4000-b000-000000000004", "prozentAnteil": 40 },
+        { "arbeitspaketId": "cc000001-0005-4000-b000-000000000005", "prozentAnteil": 30 }
+      ]
+    },
+    {
+      "id": "ff000001-0006-4000-b000-000000000006",
+      "mitarbeiterId": "dd000001-0003-4000-b000-000000000003",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 40,
+      "von": "2025-09-01",
+      "bis": "2026-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000002-0002-4000-b000-000000000002", "prozentAnteil": 60 },
+        { "arbeitspaketId": "cc000002-0004-4000-b000-000000000004", "prozentAnteil": 40 }
+      ]
+    },
+    {
+      "id": "ff000001-0007-4000-b000-000000000007",
+      "mitarbeiterId": "dd000001-0004-4000-b000-000000000004",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 100,
+      "von": "2025-06-01",
+      "bis": "2025-12-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0001-4000-b000-000000000001", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0008-4000-b000-000000000008",
+      "mitarbeiterId": "dd000001-0005-4000-b000-000000000005",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 100,
+      "von": "2026-03-01",
+      "bis": "2026-10-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0003-4000-b000-000000000003", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0009-4000-b000-000000000009",
+      "mitarbeiterId": "dd000001-0006-4000-b000-000000000006",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 80,
+      "von": "2025-11-01",
+      "bis": "2027-01-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000002-0001-4000-b000-000000000001", "prozentAnteil": 20 },
+        { "arbeitspaketId": "cc000002-0003-4000-b000-000000000003", "prozentAnteil": 50 },
+        { "arbeitspaketId": "cc000002-0004-4000-b000-000000000004", "prozentAnteil": 30 }
+      ]
+    },
+    {
+      "id": "ff000001-0010-4000-b000-000000000010",
+      "mitarbeiterId": "dd000001-0007-4000-b000-000000000007",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 70,
+      "von": "2027-01-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0005-4000-b000-000000000005", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0011-4000-b000-000000000011",
+      "mitarbeiterId": "dd000001-0007-4000-b000-000000000007",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 30,
+      "von": "2026-10-01",
+      "bis": "2027-04-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000002-0004-4000-b000-000000000004", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0012-4000-b000-000000000012",
+      "mitarbeiterId": "dd000001-0008-4000-b000-000000000008",
+      "projektId": "bb000001-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 100,
+      "von": "2027-07-01",
+      "bis": "2029-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000003-0002-4000-b000-000000000002", "prozentAnteil": 35 },
+        { "arbeitspaketId": "cc000003-0004-4000-b000-000000000004", "prozentAnteil": 35 },
+        { "arbeitspaketId": "cc000003-0005-4000-b000-000000000005", "prozentAnteil": 30 }
+      ]
+    },
+    {
+      "id": "ff000001-0013-4000-b000-000000000013",
+      "mitarbeiterId": "dd000001-0009-4000-b000-000000000009",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 80,
+      "von": "2026-09-01",
       "bis": "2027-06-30",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000004-0405-4000-a000-000000000005", "prozentAnteil": 100 }
+        { "arbeitspaketId": "cc000001-0004-4000-b000-000000000004", "prozentAnteil": 70 },
+        { "arbeitspaketId": "cc000001-0006-4000-b000-000000000006", "prozentAnteil": 30 }
       ]
     },
     {
-      "id": "f0000001-0015-4000-a000-000000000015",
-      "mitarbeiterId": "d0000001-0009-4000-a000-000000000009",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
+      "id": "ff000001-0014-4000-b000-000000000014",
+      "mitarbeiterId": "dd000001-0010-4000-b000-000000000010",
+      "projektId": "bb000001-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 30,
+      "von": "2025-06-01",
+      "bis": "2027-12-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000001-0001-4000-b000-000000000001", "prozentAnteil": 20 },
+        { "arbeitspaketId": "cc000001-0006-4000-b000-000000000006", "prozentAnteil": 80 }
+      ]
+    },
+    {
+      "id": "ff000001-0015-4000-b000-000000000015",
+      "mitarbeiterId": "dd000001-0010-4000-b000-000000000010",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 25,
+      "von": "2025-09-01",
+      "bis": "2027-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000002-0005-4000-b000-000000000005", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0016-4000-b000-000000000016",
+      "mitarbeiterId": "dd000001-0010-4000-b000-000000000010",
+      "projektId": "bb000001-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 20,
+      "von": "2027-04-01",
+      "bis": "2029-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000003-0001-4000-b000-000000000001", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000003-0005-4000-b000-000000000005", "prozentAnteil": 70 }
+      ]
+    },
+    {
+      "id": "ff000001-0017-4000-b000-000000000017",
+      "mitarbeiterId": "dd000001-0011-4000-b000-000000000011",
+      "projektId": "bb000001-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 50,
+      "von": "2026-02-01",
+      "bis": "2026-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000002-0002-4000-b000-000000000002", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000001-0018-4000-b000-000000000018",
+      "mitarbeiterId": "dd000001-0012-4000-b000-000000000012",
+      "projektId": "bb000001-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000001-1111-4000-b000-000000000001",
+      "prozentAnteil": 100,
+      "von": "2028-01-01",
+      "bis": "2029-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000003-0003-4000-b000-000000000003", "prozentAnteil": 70 },
+        { "arbeitspaketId": "cc000003-0004-4000-b000-000000000004", "prozentAnteil": 30 }
+      ]
+    },
+    {
+      "id": "ff000002-0001-4000-b000-000000000001",
+      "mitarbeiterId": "dd000002-0001-4000-b000-000000000001",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 30,
+      "von": "2025-03-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0001-4000-b000-000000000001", "prozentAnteil": 25 },
+        { "arbeitspaketId": "cc000004-0005-4000-b000-000000000005", "prozentAnteil": 75 }
+      ]
+    },
+    {
+      "id": "ff000002-0002-4000-b000-000000000002",
+      "mitarbeiterId": "dd000002-0001-4000-b000-000000000001",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 25,
+      "von": "2025-10-01",
+      "bis": "2027-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0001-4000-b000-000000000001", "prozentAnteil": 20 },
+        { "arbeitspaketId": "cc000005-0004-4000-b000-000000000004", "prozentAnteil": 80 }
+      ]
+    },
+    {
+      "id": "ff000002-0003-4000-b000-000000000003",
+      "mitarbeiterId": "dd000002-0001-4000-b000-000000000001",
+      "projektId": "bb000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 15,
+      "von": "2027-07-01",
+      "bis": "2030-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000006-0004-4000-b000-000000000004", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0004-4000-b000-000000000004",
+      "mitarbeiterId": "dd000002-0002-4000-b000-000000000002",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 80,
+      "von": "2025-03-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0001-4000-b000-000000000001", "prozentAnteil": 15 },
+        { "arbeitspaketId": "cc000004-0002-4000-b000-000000000002", "prozentAnteil": 40 },
+        { "arbeitspaketId": "cc000004-0003-4000-b000-000000000003", "prozentAnteil": 25 },
+        { "arbeitspaketId": "cc000004-0005-4000-b000-000000000005", "prozentAnteil": 20 }
+      ]
+    },
+    {
+      "id": "ff000002-0005-4000-b000-000000000005",
+      "mitarbeiterId": "dd000002-0003-4000-b000-000000000003",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 100,
+      "von": "2025-07-01",
+      "bis": "2026-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0002-4000-b000-000000000002", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0006-4000-b000-000000000006",
+      "mitarbeiterId": "dd000002-0004-4000-b000-000000000004",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 60,
+      "von": "2026-03-01",
+      "bis": "2027-04-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0003-4000-b000-000000000003", "prozentAnteil": 40 },
+        { "arbeitspaketId": "cc000004-0004-4000-b000-000000000004", "prozentAnteil": 60 }
+      ]
+    },
+    {
+      "id": "ff000002-0007-4000-b000-000000000007",
+      "mitarbeiterId": "dd000002-0004-4000-b000-000000000004",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 40,
+      "von": "2026-07-01",
+      "bis": "2027-01-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0003-4000-b000-000000000003", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0008-4000-b000-000000000008",
+      "mitarbeiterId": "dd000002-0005-4000-b000-000000000005",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 100,
+      "von": "2025-10-01",
+      "bis": "2026-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0001-4000-b000-000000000001", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000005-0002-4000-b000-000000000002", "prozentAnteil": 70 }
+      ]
+    },
+    {
+      "id": "ff000002-0009-4000-b000-000000000009",
+      "mitarbeiterId": "dd000002-0005-4000-b000-000000000005",
+      "projektId": "bb000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 50,
+      "von": "2027-07-01",
+      "bis": "2028-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000006-0001-4000-b000-000000000001", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0010-4000-b000-000000000010",
+      "mitarbeiterId": "dd000002-0006-4000-b000-000000000006",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
       "prozentAnteil": 50,
       "von": "2025-03-01",
-      "bis": "2025-10-31",
+      "bis": "2027-09-30",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0102-4000-a000-000000000002", "prozentAnteil": 100 }
+        { "arbeitspaketId": "cc000004-0001-4000-b000-000000000001", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000004-0005-4000-b000-000000000005", "prozentAnteil": 70 }
       ]
     },
     {
-      "id": "f0000001-0016-4000-a000-000000000016",
-      "mitarbeiterId": "d0000001-0010-4000-a000-000000000010",
-      "projektId": "b0000001-1111-4000-a000-000000000001",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 25,
-      "von": "2025-01-15",
-      "bis": "2027-06-30",
-      "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000001-0101-4000-a000-000000000001", "prozentAnteil": 20 },
-        { "arbeitspaketId": "c0000001-0107-4000-a000-000000000007", "prozentAnteil": 80 }
-      ]
-    },
-    {
-      "id": "f0000001-0017-4000-a000-000000000017",
-      "mitarbeiterId": "d0000001-0010-4000-a000-000000000010",
-      "projektId": "b0000002-4444-4000-a000-000000000004",
-      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
+      "id": "ff000002-0011-4000-b000-000000000011",
+      "mitarbeiterId": "dd000002-0006-4000-b000-000000000006",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
       "prozentAnteil": 30,
-      "von": "2026-06-01",
-      "bis": "2027-06-30",
+      "von": "2026-10-01",
+      "bis": "2027-03-31",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000004-0401-4000-a000-000000000001", "prozentAnteil": 25 },
-        { "arbeitspaketId": "c0000004-0405-4000-a000-000000000005", "prozentAnteil": 75 }
+        { "arbeitspaketId": "cc000005-0004-4000-b000-000000000004", "prozentAnteil": 100 }
       ]
     },
     {
-      "id": "f0000001-0018-4000-a000-000000000018",
-      "mitarbeiterId": "d0000001-0010-4000-a000-000000000010",
-      "projektId": "b0000001-3333-4000-a000-000000000003",
-      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
-      "prozentAnteil": 20,
-      "von": "2027-01-15",
-      "bis": "2028-12-31",
+      "id": "ff000002-0012-4000-b000-000000000012",
+      "mitarbeiterId": "dd000002-0007-4000-b000-000000000007",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 40,
+      "von": "2025-03-01",
+      "bis": "2025-08-31",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000003-0301-4000-a000-000000000001", "prozentAnteil": 40 },
-        { "arbeitspaketId": "c0000003-0306-4000-a000-000000000006", "prozentAnteil": 60 }
+        { "arbeitspaketId": "cc000004-0001-4000-b000-000000000001", "prozentAnteil": 100 }
       ]
     },
     {
-      "id": "f0000001-0019-4000-a000-000000000019",
-      "mitarbeiterId": "d0000001-0001-4000-a000-000000000001",
-      "projektId": "b0000002-4444-4000-a000-000000000004",
-      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
-      "prozentAnteil": 20,
-      "von": "2026-06-01",
-      "bis": "2027-06-30",
+      "id": "ff000002-0013-4000-b000-000000000013",
+      "mitarbeiterId": "dd000002-0007-4000-b000-000000000007",
+      "projektId": "bb000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 60,
+      "von": "2027-07-01",
+      "bis": "2028-06-30",
       "arbeitspaketVerteilung": [
-        { "arbeitspaketId": "c0000004-0401-4000-a000-000000000001", "prozentAnteil": 40 },
-        { "arbeitspaketId": "c0000004-0404-4000-a000-000000000004", "prozentAnteil": 30 },
-        { "arbeitspaketId": "c0000004-0405-4000-a000-000000000005", "prozentAnteil": 30 }
+        { "arbeitspaketId": "cc000006-0001-4000-b000-000000000001", "prozentAnteil": 50 },
+        { "arbeitspaketId": "cc000006-0002-4000-b000-000000000002", "prozentAnteil": 50 }
+      ]
+    },
+    {
+      "id": "ff000002-0014-4000-b000-000000000014",
+      "mitarbeiterId": "dd000002-0008-4000-b000-000000000008",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 40,
+      "von": "2027-01-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0005-4000-b000-000000000005", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0015-4000-b000-000000000015",
+      "mitarbeiterId": "dd000002-0008-4000-b000-000000000008",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 60,
+      "von": "2026-10-01",
+      "bis": "2027-03-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0004-4000-b000-000000000004", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0016-4000-b000-000000000016",
+      "mitarbeiterId": "dd000002-0009-4000-b000-000000000009",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 60,
+      "von": "2026-09-01",
+      "bis": "2027-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0004-4000-b000-000000000004", "prozentAnteil": 40 },
+        { "arbeitspaketId": "cc000004-0005-4000-b000-000000000005", "prozentAnteil": 60 }
+      ]
+    },
+    {
+      "id": "ff000002-0017-4000-b000-000000000017",
+      "mitarbeiterId": "dd000002-0009-4000-b000-000000000009",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 40,
+      "von": "2026-01-01",
+      "bis": "2026-09-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0002-4000-b000-000000000002", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0018-4000-b000-000000000018",
+      "mitarbeiterId": "dd000002-0010-4000-b000-000000000010",
+      "projektId": "bb000002-0001-4000-b000-000000000001",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 50,
+      "von": "2025-07-01",
+      "bis": "2026-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000004-0002-4000-b000-000000000002", "prozentAnteil": 50 },
+        { "arbeitspaketId": "cc000004-0003-4000-b000-000000000003", "prozentAnteil": 50 }
+      ]
+    },
+    {
+      "id": "ff000002-0019-4000-b000-000000000019",
+      "mitarbeiterId": "dd000002-0010-4000-b000-000000000010",
+      "projektId": "bb000002-0002-4000-b000-000000000002",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 50,
+      "von": "2026-07-01",
+      "bis": "2027-01-31",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000005-0003-4000-b000-000000000003", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0020-4000-b000-000000000020",
+      "mitarbeiterId": "dd000002-0011-4000-b000-000000000011",
+      "projektId": "bb000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 50,
+      "von": "2027-07-01",
+      "bis": "2028-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000006-0001-4000-b000-000000000001", "prozentAnteil": 100 }
+      ]
+    },
+    {
+      "id": "ff000002-0021-4000-b000-000000000021",
+      "mitarbeiterId": "dd000002-0012-4000-b000-000000000012",
+      "projektId": "bb000002-0003-4000-b000-000000000003",
+      "ueberProjektId": "aa000002-2222-4000-b000-000000000002",
+      "prozentAnteil": 80,
+      "von": "2027-07-01",
+      "bis": "2030-06-30",
+      "arbeitspaketVerteilung": [
+        { "arbeitspaketId": "cc000006-0001-4000-b000-000000000001", "prozentAnteil": 20 },
+        { "arbeitspaketId": "cc000006-0002-4000-b000-000000000002", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000006-0003-4000-b000-000000000003", "prozentAnteil": 30 },
+        { "arbeitspaketId": "cc000006-0004-4000-b000-000000000004", "prozentAnteil": 20 }
       ]
     }
   ],
@@ -800,7 +1492,25 @@
     { "datum": "2028-06-05", "name": "Pfingstmontag" },
     { "datum": "2028-10-03", "name": "Tag der Deutschen Einheit" },
     { "datum": "2028-12-25", "name": "1. Weihnachtstag" },
-    { "datum": "2028-12-26", "name": "2. Weihnachtstag" }
+    { "datum": "2028-12-26", "name": "2. Weihnachtstag" },
+    { "datum": "2029-01-01", "name": "Neujahr" },
+    { "datum": "2029-03-30", "name": "Karfreitag" },
+    { "datum": "2029-04-02", "name": "Ostermontag" },
+    { "datum": "2029-05-01", "name": "Tag der Arbeit" },
+    { "datum": "2029-05-10", "name": "Christi Himmelfahrt" },
+    { "datum": "2029-05-21", "name": "Pfingstmontag" },
+    { "datum": "2029-10-03", "name": "Tag der Deutschen Einheit" },
+    { "datum": "2029-12-25", "name": "1. Weihnachtstag" },
+    { "datum": "2029-12-26", "name": "2. Weihnachtstag" },
+    { "datum": "2030-01-01", "name": "Neujahr" },
+    { "datum": "2030-04-19", "name": "Karfreitag" },
+    { "datum": "2030-04-22", "name": "Ostermontag" },
+    { "datum": "2030-05-01", "name": "Tag der Arbeit" },
+    { "datum": "2030-05-30", "name": "Christi Himmelfahrt" },
+    { "datum": "2030-06-10", "name": "Pfingstmontag" },
+    { "datum": "2030-10-03", "name": "Tag der Deutschen Einheit" },
+    { "datum": "2030-12-25", "name": "1. Weihnachtstag" },
+    { "datum": "2030-12-26", "name": "2. Weihnachtstag" }
   ],
   "exportLog": [],
   "exportCounter": 0,
