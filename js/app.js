@@ -6264,12 +6264,14 @@
         doc.save(`${dokumentNr}_Projektplan_${p.name.replace(/\s+/g, '_')}.pdf`);
       },
 
-      async mitarbeiterBericht(mitarbeiterId, von, bis) {
+      async mitarbeiterBericht(mitarbeiterId, von, bis, projektId) {
         const ma = DataStore.getMitarbeiterById(mitarbeiterId);
         if (!ma) return;
 
+        const filterProjekt = projektId ? DataStore.findProjektWithParent(projektId) : null;
+        const titleSuffix = filterProjekt ? ` (${filterProjekt.ueberProjekt.name} / ${filterProjekt.projekt.name})` : '';
         const dokumentNr = DataStore.nextDokumentNummer();
-        const { doc, pageWidth, addHeader, addFooter } = this._initDoc(`Mitarbeiter-Bericht: ${ma.name}`, dokumentNr);
+        const { doc, pageWidth, addHeader, addFooter } = this._initDoc(`Mitarbeiter-Bericht: ${ma.name}${titleSuffix}`, dokumentNr);
 
         let y = 36;
 
@@ -6292,6 +6294,9 @@
           ['Feiertage', ma.feiertagePflicht ? 'Gesetzliche Feiertage aktiv' : 'Nicht angewandt'],
           ['Berichtszeitraum', `${formatDate(von)} – ${formatDate(bis)}`],
         ];
+        if (filterProjekt) {
+          info.push(['Projekt', `${filterProjekt.ueberProjekt.name} / ${filterProjekt.projekt.name}`]);
+        }
         for (const [label, val] of info) {
           doc.setFont('helvetica', 'bold');
           doc.text(`${label}:`, 14, y);
@@ -6333,7 +6338,7 @@
         }
 
         // Zuweisungen
-        const zuweisungen = DataStore.getZuweisungenForMitarbeiter(mitarbeiterId).filter(z => z.von <= bis && z.bis >= von);
+        const zuweisungen = DataStore.getZuweisungenForMitarbeiter(mitarbeiterId).filter(z => z.von <= bis && z.bis >= von && (!projektId || z.projektId === projektId));
         const feiertage = DataStore.getFeiertage();
         if (zuweisungen.length > 0) {
           if (y > 240) { doc.addPage(); y = 36; }
@@ -6685,7 +6690,8 @@
           datenHash: await DataStore.hashData(JSON.stringify({ ma, zuweisungen: DataStore.getZuweisungenForMitarbeiter(mitarbeiterId) })),
         });
 
-        doc.save(`${dokumentNr}_Mitarbeiter_${ma.name.replace(/\s+/g, '_')}.pdf`);
+        const projSuffix = filterProjekt ? `_${filterProjekt.projekt.name.replace(/\s+/g, '_')}` : '';
+        doc.save(`${dokumentNr}_Mitarbeiter_${ma.name.replace(/\s+/g, '_')}${projSuffix}.pdf`);
       },
 
       async ueberProjektBericht(ueberProjektId, von, bis) {
@@ -6843,6 +6849,47 @@
           el('div', null, el('label', { className: 'form-label' }, 'Von *'), vonInput),
           el('div', null, el('label', { className: 'form-label' }, 'Bis *'), bisInput)
         ));
+
+        // Project filter for Mitarbeiter exports
+        let projektSelect = null;
+        if (typ === 'mitarbeiter') {
+          const zuweisungen = DataStore.getZuweisungenForMitarbeiter(referenzId);
+          if (zuweisungen.length > 0) {
+            projektSelect = el('select', { className: 'form-input' });
+            projektSelect.appendChild(el('option', { value: '' }, 'Alle Projekte'));
+            const seen = new Set();
+            for (const zw of zuweisungen) {
+              if (seen.has(zw.projektId)) continue;
+              seen.add(zw.projektId);
+              const found = DataStore.findProjektWithParent(zw.projektId);
+              const label = found ? `${found.ueberProjekt.name} / ${found.projekt.name}` : 'Unbekannt';
+              projektSelect.appendChild(el('option', { value: zw.projektId }, label));
+            }
+            // Pre-select if a projektId was passed in defaults
+            if (defaults?.projektId) projektSelect.value = defaults.projektId;
+            // Update date range when project selection changes
+            projektSelect.addEventListener('change', () => {
+              const selId = projektSelect.value;
+              if (selId) {
+                const zws = zuweisungen.filter(z => z.projektId === selId);
+                if (zws.length > 0) {
+                  let minVon = zws[0].von, maxBis = zws[0].bis;
+                  for (let i = 1; i < zws.length; i++) {
+                    if (zws[i].von < minVon) minVon = zws[i].von;
+                    if (zws[i].bis > maxBis) maxBis = zws[i].bis;
+                  }
+                  vonInput.value = minVon;
+                  bisInput.value = maxBis;
+                }
+              }
+            });
+            body.appendChild(el('div', { style: { marginBottom: '24px' } },
+              el('label', { className: 'form-label' }, 'Projekt'),
+              projektSelect
+            ));
+          }
+        }
+
         body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end' } },
           el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
           el('button', { className: 'btn-primary', onClick: async () => {
@@ -6850,7 +6897,8 @@
             if (typ === 'projekt') {
               await PDFExport.projektBericht(defaults.ueberProjektId, referenzId, vonInput.value, bisInput.value);
             } else if (typ === 'mitarbeiter') {
-              await PDFExport.mitarbeiterBericht(referenzId, vonInput.value, bisInput.value);
+              const selProjekt = projektSelect ? projektSelect.value : null;
+              await PDFExport.mitarbeiterBericht(referenzId, vonInput.value, bisInput.value, selProjekt || null);
             } else if (typ === 'ueberprojekt') {
               await PDFExport.ueberProjektBericht(referenzId, vonInput.value, bisInput.value);
             }
