@@ -4662,7 +4662,7 @@
 
     // --- Zuweisung Modal ---
     function openZuweisungModal(ueberProjektId, projektId, existing) {
-      const mitarbeiterList = DataStore.getMitarbeiter();
+      const mitarbeiterList = DataStore.getMitarbeiter().filter(m => m.ueberProjektId === ueberProjektId);
       const up = DataStore.getUeberProjekt(ueberProjektId);
       const p = up ? (up.projekte || []).find(pr => pr.id === projektId) : null;
       const aps = p ? flattenAPs(p.arbeitspakete) : [];
@@ -4735,16 +4735,17 @@
           body.appendChild(apContainer);
         }
 
-        // Preview
+        // Preview + Allocation check
         const previewBox = el('div', { className: 'card', style: { background: '#F0FDFD', border: '1px solid #CCFBF9', padding: '16px', marginBottom: '24px', display: 'none' } });
         body.appendChild(previewBox);
 
+        let allocationOk = true;
         function updatePreview() {
           const maId = maSelect.value;
           const pct = parseInt(prozentInput.value) || 0;
           const von = vonInput.value;
           const bis = bisInput.value;
-          if (!maId || !pct || !von || !bis) { previewBox.style.display = 'none'; return; }
+          if (!maId || !pct || !von || !bis) { previewBox.style.display = 'none'; allocationOk = true; return; }
           const calc = CalcEngine.calculate(maId, pct, von, bis, []);
           previewBox.style.display = 'block';
           previewBox.innerHTML = '';
@@ -4752,6 +4753,32 @@
           previewBox.appendChild(el('p', { style: { fontSize: '13px', color: '#0A5C5F', margin: '0' } },
             `${calc.werktage} Werktage − ${calc.blockiert} blockiert = ${calc.verfuegbar} verfügbar \u00D7 ${pct}% = ${calc.projektTage} Projekt-Tage`
           ));
+
+          // Allocation check
+          const otherZws = DataStore.getZuweisungenForMitarbeiter(maId)
+            .filter(z => z.id !== (existing ? existing.id : null) && z.von <= bis && z.bis >= von);
+          const otherPct = otherZws.reduce((s, z) => s + (Number(z.prozentAnteil) || 0), 0);
+          const totalPct = otherPct + pct;
+          allocationOk = totalPct <= 100;
+          const barColor = totalPct > 100 ? '#DC2626' : totalPct >= 80 ? '#F59E0B' : '#0D7377';
+          const auslastungEl = el('div', { style: { marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' } },
+            el('span', { style: { fontSize: '12px', color: '#64748B' } }, 'Gesamtauslastung:'),
+            el('div', { style: { width: '100px', height: '6px', background: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' } },
+              el('div', { style: { width: `${Math.min(totalPct, 100)}%`, height: '100%', background: barColor, borderRadius: '3px' } })
+            ),
+            el('span', { style: { fontSize: '12px', fontWeight: '600', color: barColor } }, `${totalPct}%`)
+          );
+          previewBox.appendChild(auslastungEl);
+          if (totalPct > 100) {
+            previewBox.style.background = '#FEF2F2';
+            previewBox.style.borderColor = '#FECACA';
+            previewBox.appendChild(el('p', { style: { fontSize: '12px', color: '#DC2626', fontWeight: '600', margin: '6px 0 0' } },
+              `Achtung: Gesamtauslastung wäre ${totalPct}% (max. 100%). Zuweisung nicht möglich.`
+            ));
+          } else {
+            previewBox.style.background = '#F0FDFD';
+            previewBox.style.borderColor = '#CCFBF9';
+          }
         }
         maSelect.addEventListener('change', updatePreview);
         prozentInput.addEventListener('input', updatePreview);
@@ -4768,6 +4795,7 @@
             if (!vonInput.value) { vonInput.style.borderColor = '#DC2626'; return; }
             if (!bisInput.value) { bisInput.style.borderColor = '#DC2626'; return; }
             if (vonInput.value > bisInput.value) { vonInput.style.borderColor = '#DC2626'; bisInput.style.borderColor = '#DC2626'; alert('Startdatum muss vor dem Enddatum liegen.'); return; }
+            if (!allocationOk) { alert('Gesamtauslastung würde 100% überschreiten. Bitte Prozentanteil oder Zeitraum anpassen.'); return; }
 
             const apVert = aps.length > 0 && apContainer
               ? apInputs.map(item => ({
@@ -4800,78 +4828,134 @@
 
     // --- Mitarbeiter ---
     function renderMitarbeiter(container) {
-      const mitarbeiter = DataStore.getMitarbeiter();
+      const allMitarbeiter = DataStore.getMitarbeiter();
+      const ueberProjekte = DataStore.getUeberProjekte();
+
+      // Company filter
+      let selectedFirma = '';
+      const firmaFilter = el('select', { className: 'form-input', style: { width: 'auto', minWidth: '180px' } });
+      firmaFilter.appendChild(el('option', { value: '' }, 'Alle Firmen'));
+      for (const up of ueberProjekte) firmaFilter.appendChild(el('option', { value: up.id }, up.name));
+      firmaFilter.addEventListener('change', () => { selectedFirma = firmaFilter.value; rerender(); });
+
+      const listContainer = el('div');
+
+      function rerender() {
+        const mitarbeiter = selectedFirma ? allMitarbeiter.filter(m => m.ueberProjektId === selectedFirma) : allMitarbeiter;
+        listContainer.innerHTML = '';
+        if (mitarbeiter.length === 0) {
+          listContainer.appendChild(renderEmptyState(
+            'Keine Mitarbeiter gefunden',
+            selectedFirma ? 'Keine Mitarbeiter für diese Firma.' : 'Erstelle Mitarbeiter, um sie Projekten zuzuweisen.',
+            '+ Mitarbeiter erstellen',
+            () => openMitarbeiterModal()
+          ));
+        } else {
+          const grid = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } });
+          for (const ma of mitarbeiter) {
+            const firma = ma.ueberProjektId ? ueberProjekte.find(u => u.id === ma.ueberProjektId) : null;
+            const firmaBadge = firma
+              ? el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#E0E7FF', color: '#4338CA', fontWeight: '600' } }, firma.name)
+              : el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#FEF3C7', color: '#92400E', fontWeight: '600' } }, 'Keine Firma');
+            const jahr = new Date().getFullYear();
+            const budget = getUrlaubstageBudget(ma.id, jahr);
+            const zwList = DataStore.getZuweisungenForMitarbeiter(ma.id);
+            const zwCount = zwList.length;
+            const budgetColor = budget.verbleibend <= 0 ? '#DC2626' : budget.verbleibend <= 5 ? '#F59E0B' : '#0D7377';
+            const ftBadge = ma.feiertagePflicht
+              ? el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#CCFBF9', color: '#0A5C5F', fontWeight: '600' } }, 'Feiertage: An')
+              : el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#F1F5F9', color: '#94A3B8', fontWeight: '600' } }, 'Feiertage: Aus');
+
+            // Allocation bar
+            const today = new Date().toISOString().slice(0, 10);
+            const activeZws = zwList.filter(z => z.von <= today && z.bis >= today);
+            const totalPct = activeZws.reduce((s, z) => s + (Number(z.prozentAnteil) || 0), 0);
+            const barColor = totalPct > 100 ? '#DC2626' : totalPct >= 80 ? '#F59E0B' : '#0D7377';
+            const allocationBar = el('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' } },
+              el('span', { style: { fontSize: '11px', color: '#64748B' } }, 'Auslastung:'),
+              el('div', { style: { width: '80px', height: '6px', background: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' } },
+                el('div', { style: { width: `${Math.min(totalPct, 100)}%`, height: '100%', background: barColor, borderRadius: '3px' } })
+              ),
+              el('span', { style: { fontSize: '11px', fontWeight: '600', color: barColor } }, `${totalPct}%`)
+            );
+
+            // Assignment list
+            const assignmentDetails = el('div', { style: { marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' } });
+            for (const zw of zwList) {
+              const projName = (() => { for (const up of ueberProjekte) { const p = (up.projekte || []).find(pr => pr.id === zw.projektId); if (p) return p.name; } return '?'; })();
+              assignmentDetails.appendChild(el('span', { style: { fontSize: '11px', padding: '1px 6px', borderRadius: '4px', background: '#F0F9FF', color: '#1E56B5', border: '1px solid #BFDBFE' } }, `${projName} (${zw.prozentAnteil}%)`));
+            }
+
+            grid.appendChild(el('div', { className: 'card', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px' } },
+              el('div', { style: { flex: '1' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
+                  el('span', { style: { fontWeight: '600', fontSize: '15px', color: '#1E293B' } }, ma.name),
+                  el('span', { style: { fontSize: '13px', color: '#64748B' } }, ma.position || ''),
+                  firmaBadge,
+                  ftBadge
+                ),
+                el('div', { style: { fontSize: '12px', color: '#94A3B8', marginTop: '4px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' } },
+                  el('span', null, `${ma.wochenStunden || 40}h/Woche`),
+                  el('span', null, '\u00B7'),
+                  el('span', { style: { color: budgetColor, fontWeight: '600' } }, `Urlaub: ${budget.genommen}/${budget.anspruch}`),
+                  el('span', null, '\u00B7'),
+                  el('span', null, `${zwCount} Zuweisung${zwCount !== 1 ? 'en' : ''}`),
+                  (ma.jahresgehalt || ma.lohnnebenkosten) ? el('span', null, '\u00B7') : null,
+                  (ma.jahresgehalt || ma.lohnnebenkosten) ? el('span', { style: { color: '#F59E0B', fontWeight: '600' } }, `${formatEuro(CalcEngine.getDailyRate(ma.id))}/Tag`) : null
+                ),
+                allocationBar,
+                zwList.length > 0 ? assignmentDetails : null
+              ),
+              el('div', { style: { display: 'flex', gap: '4px' } },
+                el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => {
+                  const zws = DataStore.getZuweisungenForMitarbeiter(ma.id);
+                  let von = jahr + '-01-01', bis = jahr + '-12-31';
+                  if (zws.length > 0) {
+                    von = zws[0].von; bis = zws[0].bis;
+                    for (let i = 1; i < zws.length; i++) {
+                      if (zws[i].von < von) von = zws[i].von;
+                      if (zws[i].bis > bis) bis = zws[i].bis;
+                    }
+                  }
+                  openExportDialog('mitarbeiter', ma.id, { von, bis });
+                }}, 'PDF'),
+                el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => Router.navigate(`#/mitarbeiter-kalender/${ma.id}`) }, 'Kalender'),
+                el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Abwesenheiten'),
+                el('button', { className: 'btn-icon', onClick: () => openMitarbeiterModal(ma), 'aria-label': 'Bearbeiten' }, '\u270E'),
+                el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${ma.name}" und alle Zuweisungen löschen?`, () => { DataStore.deleteMitarbeiter(ma.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
+              )
+            ));
+          }
+          listContainer.appendChild(grid);
+        }
+      }
 
       container.appendChild(el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' } },
         el('div', null,
           el('h1', { style: { fontSize: '28px', margin: '0', color: '#063838' } }, 'Mitarbeiter'),
           el('p', { style: { color: '#64748B', fontSize: '14px', margin: '4px 0 0' } }, 'Mitarbeiter verwalten und Blockierungen pflegen')
         ),
-        el('button', { className: 'btn-primary', onClick: () => openMitarbeiterModal() }, '+ Neuer Mitarbeiter')
+        el('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } },
+          firmaFilter,
+          el('button', { className: 'btn-primary', onClick: () => openMitarbeiterModal() }, '+ Neuer Mitarbeiter')
+        )
       ));
-
-      if (mitarbeiter.length === 0) {
-        container.appendChild(renderEmptyState(
-          'Noch keine Mitarbeiter',
-          'Erstelle Mitarbeiter, um sie Projekten zuzuweisen.',
-          '+ Mitarbeiter erstellen',
-          () => openMitarbeiterModal()
-        ));
-      } else {
-        const grid = el('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } });
-        for (const ma of mitarbeiter) {
-          const jahr = new Date().getFullYear();
-          const budget = getUrlaubstageBudget(ma.id, jahr);
-          const zwCount = DataStore.getZuweisungenForMitarbeiter(ma.id).length;
-          const budgetColor = budget.verbleibend <= 0 ? '#DC2626' : budget.verbleibend <= 5 ? '#F59E0B' : '#0D7377';
-          const ftBadge = ma.feiertagePflicht
-            ? el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#CCFBF9', color: '#0A5C5F', fontWeight: '600' } }, 'Feiertage: An')
-            : el('span', { style: { fontSize: '11px', padding: '1px 8px', borderRadius: '999px', background: '#F1F5F9', color: '#94A3B8', fontWeight: '600' } }, 'Feiertage: Aus');
-          grid.appendChild(el('div', { className: 'card', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px' } },
-            el('div', null,
-              el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
-                el('span', { style: { fontWeight: '600', fontSize: '15px', color: '#1E293B' } }, ma.name),
-                el('span', { style: { fontSize: '13px', color: '#64748B' } }, ma.position || ''),
-                ftBadge
-              ),
-              el('div', { style: { fontSize: '12px', color: '#94A3B8', marginTop: '4px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' } },
-                el('span', null, `${ma.wochenStunden || 40}h/Woche`),
-                el('span', null, '\u00B7'),
-                el('span', { style: { color: budgetColor, fontWeight: '600' } }, `Urlaub: ${budget.genommen}/${budget.anspruch}`),
-                el('span', null, '\u00B7'),
-                el('span', null, `${zwCount} Zuweisung${zwCount !== 1 ? 'en' : ''}`),
-                (ma.jahresgehalt || ma.lohnnebenkosten) ? el('span', null, '\u00B7') : null,
-                (ma.jahresgehalt || ma.lohnnebenkosten) ? el('span', { style: { color: '#F59E0B', fontWeight: '600' } }, `${formatEuro(CalcEngine.getDailyRate(ma.id))}/Tag`) : null
-              )
-            ),
-            el('div', { style: { display: 'flex', gap: '4px' } },
-              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => {
-                const zws = DataStore.getZuweisungenForMitarbeiter(ma.id);
-                let von = jahr + '-01-01', bis = jahr + '-12-31';
-                if (zws.length > 0) {
-                  von = zws[0].von; bis = zws[0].bis;
-                  for (let i = 1; i < zws.length; i++) {
-                    if (zws[i].von < von) von = zws[i].von;
-                    if (zws[i].bis > bis) bis = zws[i].bis;
-                  }
-                }
-                openExportDialog('mitarbeiter', ma.id, { von, bis });
-              }}, 'PDF'),
-              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => Router.navigate(`#/mitarbeiter-kalender/${ma.id}`) }, 'Kalender'),
-              el('button', { className: 'btn-secondary', style: { padding: '6px 12px', fontSize: '12px' }, onClick: () => openBlockierungModal(ma) }, 'Abwesenheiten'),
-              el('button', { className: 'btn-icon', onClick: () => openMitarbeiterModal(ma), 'aria-label': 'Bearbeiten' }, '\u270E'),
-              el('button', { className: 'btn-icon', onClick: () => confirmDialog(`"${ma.name}" und alle Zuweisungen löschen?`, () => { DataStore.deleteMitarbeiter(ma.id); Router.resolve(); }), 'aria-label': 'Löschen' }, trashIcon())
-            )
-          ));
-        }
-        container.appendChild(grid);
-      }
-    }
+      container.appendChild(listContainer);
+      rerender();
 
     // --- Mitarbeiter Modal ---
     function openMitarbeiterModal(existing) {
       openModal(existing ? 'Mitarbeiter bearbeiten' : 'Neuer Mitarbeiter', (body, close) => {
         if (existing) { const w = buildExportWarning(existing.id); if (w) body.appendChild(w); }
+
+        // Company dropdown (required)
+        const firmaSelect = el('select', { className: 'form-input' });
+        firmaSelect.appendChild(el('option', { value: '' }, '– Firma wählen –'));
+        for (const up of DataStore.getUeberProjekte()) {
+          firmaSelect.appendChild(el('option', { value: up.id }, up.name));
+        }
+        if (existing && existing.ueberProjektId) firmaSelect.value = existing.ueberProjektId;
+
         const nameInput = el('input', { className: 'form-input', placeholder: 'Vor- und Nachname', value: existing ? existing.name : '' });
         const posInput = el('input', { className: 'form-input', placeholder: 'z.B. Entwickler', value: existing ? (existing.position || '') : '' });
         const hoursInput = el('input', { className: 'form-input', type: 'number', min: '1', max: '60', value: existing ? (existing.wochenStunden || 40) : '40' });
@@ -4881,6 +4965,7 @@
         const feiertageCb = el('input', { type: 'checkbox', style: { width: '18px', height: '18px', accentColor: '#0D7377', cursor: 'pointer' } });
         if (existing && existing.feiertagePflicht) feiertageCb.checked = true;
 
+        body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Firma *'), firmaSelect));
         body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Name *'), nameInput));
         body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Position'), posInput));
         body.appendChild(el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' } },
@@ -4898,11 +4983,12 @@
         body.appendChild(el('div', { style: { display: 'flex', gap: '12px', justifyContent: 'flex-end' } },
           el('button', { className: 'btn-secondary', onClick: close }, 'Abbrechen'),
           el('button', { className: 'btn-primary', onClick: () => {
+            if (!firmaSelect.value) { firmaSelect.style.borderColor = '#DC2626'; return; }
             const name = nameInput.value.trim();
             if (!name) { nameInput.style.borderColor = '#DC2626'; return; }
             const ma = existing
-              ? { ...existing, name, position: posInput.value.trim(), wochenStunden: parseInt(hoursInput.value) || 40, jahresUrlaub: parseInt(urlaubInput.value) || 30, jahresgehalt: parseFloat(gehaltInput.value) || 0, lohnnebenkosten: parseFloat(nebenkostenInput.value) || 0, feiertagePflicht: feiertageCb.checked, geaendertAm: new Date().toISOString() }
-              : { id: crypto.randomUUID(), name, position: posInput.value.trim(), wochenStunden: parseInt(hoursInput.value) || 40, jahresUrlaub: parseInt(urlaubInput.value) || 30, jahresgehalt: parseFloat(gehaltInput.value) || 0, lohnnebenkosten: parseFloat(nebenkostenInput.value) || 0, feiertagePflicht: feiertageCb.checked, blockierungen: [], erstelltAm: new Date().toISOString() };
+              ? { ...existing, ueberProjektId: firmaSelect.value, name, position: posInput.value.trim(), wochenStunden: parseInt(hoursInput.value) || 40, jahresUrlaub: parseInt(urlaubInput.value) || 30, jahresgehalt: parseFloat(gehaltInput.value) || 0, lohnnebenkosten: parseFloat(nebenkostenInput.value) || 0, feiertagePflicht: feiertageCb.checked, geaendertAm: new Date().toISOString() }
+              : { id: crypto.randomUUID(), ueberProjektId: firmaSelect.value, name, position: posInput.value.trim(), wochenStunden: parseInt(hoursInput.value) || 40, jahresUrlaub: parseInt(urlaubInput.value) || 30, jahresgehalt: parseFloat(gehaltInput.value) || 0, lohnnebenkosten: parseFloat(nebenkostenInput.value) || 0, feiertagePflicht: feiertageCb.checked, blockierungen: [], erstelltAm: new Date().toISOString() };
             DataStore.saveMitarbeiter(ma);
             close();
             Router.resolve();

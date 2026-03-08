@@ -350,6 +350,7 @@
   "mitarbeiter": [
     {
       "id": "d0000001-0001-4000-a000-000000000001",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Dipl.-Ing. Klaus Berger",
       "position": "Projektleiter / Technische Leitung",
       "wochenStunden": 40,
@@ -366,6 +367,7 @@
     },
     {
       "id": "d0000001-0002-4000-a000-000000000002",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Dr.-Ing. Petra Hartmann",
       "position": "Konstruktionsleiterin",
       "wochenStunden": 40,
@@ -382,6 +384,7 @@
     },
     {
       "id": "d0000001-0003-4000-a000-000000000003",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Thomas Keller",
       "position": "SPS-Programmierer / Automatisierung",
       "wochenStunden": 40,
@@ -397,6 +400,7 @@
     },
     {
       "id": "d0000001-0004-4000-a000-000000000004",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Sabine Wolf",
       "position": "Mechanische Konstrukteurin (SolidWorks)",
       "wochenStunden": 40,
@@ -412,6 +416,7 @@
     },
     {
       "id": "d0000001-0005-4000-a000-000000000005",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Michael Braun",
       "position": "Elektroingenieur / IoT",
       "wochenStunden": 35,
@@ -428,6 +433,7 @@
     },
     {
       "id": "d0000001-0006-4000-a000-000000000006",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Anna Zimmermann",
       "position": "Robotik-Ingenieurin",
       "wochenStunden": 40,
@@ -443,6 +449,7 @@
     },
     {
       "id": "d0000001-0007-4000-a000-000000000007",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Jürgen Schmitz",
       "position": "Werkstattleiter Montage",
       "wochenStunden": 40,
@@ -459,6 +466,7 @@
     },
     {
       "id": "d0000001-0008-4000-a000-000000000008",
+      "ueberProjektId": "a0000002-2222-4000-a000-000000000002",
       "name": "Lena Fischer",
       "position": "QA / Messtechnik-Ingenieurin",
       "wochenStunden": 32,
@@ -474,6 +482,7 @@
     },
     {
       "id": "d0000001-0009-4000-a000-000000000009",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Dirk Neumann",
       "position": "CAD-Konstrukteur (Werkstudent)",
       "wochenStunden": 20,
@@ -488,6 +497,7 @@
     },
     {
       "id": "d0000001-0010-4000-a000-000000000010",
+      "ueberProjektId": "a0000001-1111-4000-a000-000000000001",
       "name": "Martina Schäfer",
       "position": "Projektcontrolling / Fördermittel",
       "wochenStunden": 40,
