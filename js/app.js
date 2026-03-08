@@ -5127,6 +5127,7 @@
         ));
       });
     }
+    }
 
     // --- Feiertage ---
     function renderFeiertage(container) {
