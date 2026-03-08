@@ -5565,27 +5565,34 @@
             doc.setFillColor(r, g, b);
             doc.rect(0, (barH * i) / gradSteps, pageWidth, barH / gradSteps + 0.5, 'F');
           }
-          // Add logo if available
+          // Add logo — full wordmark (600×126px, aspect ≈ 4.76:1)
+          const logoH = 10;
+          const logoW = logoH * (600 / 126); // ≈ 47.6mm, preserves aspect ratio
           const logoX = 10;
-          const logoH = 16;
-          const logoW = 16;
-          const logoY = 6;
-          let textLeft = 14;
+          const logoY = 4;
+          let titleLeft = 14;
           if (window.NOVARIX_LOGO_BASE64) {
             try {
               doc.addImage(window.NOVARIX_LOGO_BASE64, 'PNG', logoX, logoY, logoW, logoH);
-              textLeft = logoX + logoW + 4;
+              titleLeft = logoX; // title goes below the logo
             } catch (e) {
               console.warn('PDF logo failed:', e);
+              // Fallback: render text if logo fails
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(16);
+              doc.setTextColor(255, 255, 255);
+              doc.text('NOVARIX', titleLeft, 13);
             }
+          } else {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(16);
+            doc.setTextColor(255, 255, 255);
+            doc.text('NOVARIX', titleLeft, 13);
           }
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(16);
-          doc.setTextColor(255, 255, 255);
-          doc.text('NOVARIX', textLeft, 13);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          doc.text(title, textLeft, 21);
+          doc.setTextColor(255, 255, 255);
+          doc.text(title, titleLeft, 21);
           doc.setFontSize(8);
           doc.text(`Dok.Nr.: ${dokumentNr}`, pageWidth - 14, 13, { align: 'right' });
           doc.text(`Datum: ${dateStr}`, pageWidth - 14, 19, { align: 'right' });
@@ -5868,7 +5875,7 @@
             doc.text(apName, nameX, rowY + 4.5);
 
             // Status dot
-            const dotColors = { aktiv: [13,115,119], in_bearbeitung: [13,115,119], abgeschlossen: [100,116,139], offen: [217,119,6], geplant: [217,119,6] };
+            const dotColors = { aktiv: [30,86,181], in_bearbeitung: [30,86,181], abgeschlossen: [100,116,139], offen: [217,119,6], geplant: [217,119,6] };
             const dc = dotColors[ap.status] || [217,119,6];
             doc.setFillColor(dc[0], dc[1], dc[2]);
             doc.circle(ganttLeft - 3, rowY + rowHeight / 2, 1, 'F');
@@ -5884,7 +5891,7 @@
                 const barW = ((apEndDay - apStartDay) / totalDays) * ganttWidth;
                 const barY = rowY + (rowHeight - barHeight) / 2;
 
-                const bc = depth > 0 ? (pdfStatusColorsLight[ap.status] || [15,168,163]) : (pdfStatusColors[ap.status] || [13,115,119]);
+                const bc = depth > 0 ? (pdfStatusColorsLight[ap.status] || [58,127,212]) : (pdfStatusColors[ap.status] || [30,86,181]);
                 doc.setFillColor(bc[0], bc[1], bc[2]);
                 doc.roundedRect(barX, barY, Math.max(barW, 1), barHeight, 1.5, 1.5, 'F');
 
@@ -6029,7 +6036,7 @@
                 head: [['Arbeitspaket', 'Anteil', 'Tage']],
                 body: apRows,
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-                headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+                headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
                 alternateRowStyles: { fillColor: [235, 246, 254] },
                 margin: { left: 20, right: 14 },
               });
@@ -6577,13 +6584,13 @@
                   // Cell background
                   if (isWorkDay) {
                     if (isPartial) {
-                      doc.setFillColor(194, 232, 251); // light teal for partial
+                      doc.setFillColor(194, 232, 251); // light blue for partial
                     } else {
-                      doc.setFillColor(30, 86, 181); // teal for full day
+                      doc.setFillColor(30, 86, 181); // navy blue for full day
                     }
                     doc.roundedRect(cx + 0.3, cy + 0.3, cellW - 0.6, cellH - 0.6, 0.8, 0.8, 'F');
                   } else if (blockType) {
-                    const bc = blockType === 'krank' ? [220, 38, 38] : blockType === 'feiertag' ? [245, 158, 11] : [30, 86, 181];
+                    const bc = blockType === 'krank' ? [220, 38, 38] : blockType === 'feiertag' ? [245, 158, 11] : [124, 58, 237];
                     doc.setFillColor(bc[0], bc[1], bc[2]);
                     doc.roundedRect(cx + 0.3, cy + 0.3, cellW - 0.6, cellH - 0.6, 0.8, 0.8, 'F');
                   } else if (isWeekend) {
@@ -6655,6 +6662,7 @@
               const legendItems = [
                 { color: [30, 86, 181], label: 'Arbeitstag (8h)' },
                 { color: [194, 232, 251], label: 'Teiltag', textColor: [30, 86, 181] },
+                { color: [124, 58, 237], label: 'Urlaub' },
                 { color: [220, 38, 38], label: 'Krank' },
                 { color: [245, 158, 11], label: 'Feiertag' },
               ];
@@ -6681,7 +6689,7 @@
                 head: [['Datum', 'Tag', 'Arbeitszeit']],
                 body: dayRows,
                 styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-                headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+                headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
                 alternateRowStyles: { fillColor: [235, 246, 254] },
                 columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 14 }, 2: { cellWidth: 'auto' } },
                 margin: { left: 18, right: 14 },
@@ -6762,7 +6770,7 @@
               head: [['Mitarbeiter', 'Anteil', 'Verfügbar', 'Proj.-Tage']],
               body: rows,
               styles: { fontSize: 7.5, cellPadding: 2, font: 'helvetica' },
-              headStyles: { fillColor: [58, 127, 212], textColor: 255, fontStyle: 'bold' },
+              headStyles: { fillColor: [30, 86, 181], textColor: 255, fontStyle: 'bold' },
               alternateRowStyles: { fillColor: [235, 246, 254] },
               margin: { left: 18, right: 14 },
             });
