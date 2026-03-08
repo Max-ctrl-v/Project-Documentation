@@ -21,6 +21,11 @@
         return user && user.role === 'admin';
       },
 
+      getRole() {
+        const user = this.getCurrentUser();
+        return user ? user.role : null;
+      },
+
       async init() {
         // Try auto-login via HttpOnly refresh cookie
         if (this._hasBackend()) {
@@ -272,7 +277,8 @@
               notiz: b.notiz || '',
             }));
             return {
-              id: ma.id, name: ma.name, position: ma.position || '',
+              id: ma.id, ueberProjektId: ma.ueberProjektId || null,
+              name: ma.name, position: ma.position || '',
               wochenStunden: Number(ma.wochenStunden) || 40, jahresUrlaub: Number(ma.jahresUrlaub) || 30,
               feiertagePflicht: ma.feiertagePflicht !== false,
               jahresgehalt: Number(ma.jahresgehalt) || 0, lohnnebenkosten: Number(ma.lohnnebenkosten) || 0,
@@ -339,6 +345,17 @@
             // Backend has zuweisungen but no AP distributions — localStorage is richer
             console.log('Backend fehlen AP-Verteilungen, behalte lokale Daten.');
             return;
+          }
+
+          // Preserve externeEntwicklungen from localStorage (not stored in backend)
+          const existingUPs = existing.ueberProjekte || [];
+          for (const up of localData.ueberProjekte) {
+            const oldUP = existingUPs.find(o => o.id === up.id);
+            if (oldUP && oldUP.externeEntwicklungen) up.externeEntwicklungen = oldUP.externeEntwicklungen;
+            for (const p of (up.projekte || [])) {
+              const oldP = oldUP ? (oldUP.projekte || []).find(o => o.id === p.id) : null;
+              if (oldP && oldP.externeEntwicklungen) p.externeEntwicklungen = oldP.externeEntwicklungen;
+            }
           }
 
           localStorage.setItem('novarix_data', JSON.stringify(localData));
@@ -4963,7 +4980,7 @@
         const gehaltInput = el('input', { className: 'form-input', type: 'number', min: '0', step: '1000', placeholder: 'z.B. 60000', value: existing ? (existing.jahresgehalt || '') : '' });
         const nebenkostenInput = el('input', { className: 'form-input', type: 'number', min: '0', step: '100', placeholder: 'z.B. 12000', value: existing ? (existing.lohnnebenkosten || '') : '' });
         const feiertageCb = el('input', { type: 'checkbox', style: { width: '18px', height: '18px', accentColor: '#0D7377', cursor: 'pointer' } });
-        if (existing && existing.feiertagePflicht) feiertageCb.checked = true;
+        feiertageCb.checked = existing ? !!existing.feiertagePflicht : true;
 
         body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Firma *'), firmaSelect));
         body.appendChild(el('div', { style: { marginBottom: '16px' } }, el('label', { className: 'form-label' }, 'Name *'), nameInput));
@@ -5918,7 +5935,7 @@
           doc.setFont('helvetica', 'normal');
           let legendX = leftMargin;
           const legendItems = [
-            { label: 'Aktiv', color: [13,115,119] },
+            { label: 'Aktiv', color: [30,86,181] },
             { label: 'Abgeschlossen', color: [100,116,139] },
             { label: 'Geplant', color: [217,119,6] },
           ];
